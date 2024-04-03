@@ -2,6 +2,9 @@ package link.parser
 
 import cats.implicits._
 import link.rule._
+import link.graph.ImmutableSentenceGraph
+import link.graph.SentenceEdgeSyntax
+import link.graph.ImmutableSentenceGraph.{T => SentenceGraph}
 
 class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
   def sentenceRules(sentence: List[W]): Option[List[LinkRule.NormalForm]] = 
@@ -76,29 +79,33 @@ class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
     }
   }
 
-  def links(words: List[W]): List[SentenceGraph[W]] = {
-    sentenceRules(words).fold(List.empty[SentenceGraph[W]]) { rules =>
-      def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[SentenceGraph[W]] = 
+  def links(words: List[W]): List[SentenceGraph] = {
+    import SentenceEdgeSyntax._
+
+    sentenceRules(words).fold(List.empty[SentenceGraph]) { rules =>
+      def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[SentenceGraph] = 
         (as, bs) match {
-          case (a :: _, b :: _) if a.linkTag.matches(b.linkTag) => List(SentenceGraph.withEdge((words(w1), w1), (words(w2), w2), a.linkTag.simplify))
+          case (a :: _, b :: _) if a.linkTag.matches(b.linkTag) => {
+            List(ImmutableSentenceGraph.from(List(w1, w2), List(w1 ~ w2 :+ a.linkTag.simplify)))
+          }
           case _ => List.empty
         }
 
-      def product(as: List[SentenceGraph[W]], bs: => List[SentenceGraph[W]]): List[SentenceGraph[W]] = 
+      def product(as: List[SentenceGraph], bs: => List[SentenceGraph]): List[SentenceGraph] = 
         for {
           a <- as
           b <- bs
-        } yield a.merge(b)
+        } yield a union b
 
-      def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[SentenceGraph[W]] = {
+      def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[SentenceGraph] = {
         if(leftIndex + 1 == rightIndex) {
           if(l.isEmpty && r.isEmpty) {
-            List(SentenceGraph.empty)
+            List(ImmutableSentenceGraph.empty)
           } else {
             List()
           }
         } else {
-          val links = collection.mutable.MutableList[SentenceGraph[W]]()
+          val links = collection.mutable.ListBuffer[SentenceGraph]()
 
           for(w <- leftIndex + 1 until rightIndex) {
             for(d <- rules(w).disjunction) {
@@ -121,7 +128,7 @@ class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
         }
       }
 
-      def conjunctParses(start: Int, conjunct: LinkRule.LinkList): List[SentenceGraph[W]] = {
+      def conjunctParses(start: Int, conjunct: LinkRule.LinkList): List[SentenceGraph] = {
         if(conjunct.leftLinks.isEmpty) {
           if(conjunct.rightLinks.isEmpty && start < words.length) {
             rules(start + 1).disjunction.map { conjunct2 =>
