@@ -16,8 +16,6 @@ object ImmutableSentenceGraph {
 
 object MutableSentenceGraph extends TypedGraphFactory[Int, SentenceEdge] {
   type T = MutableGraph[Int, SentenceEdge]
-
-  def merge(g1: T, g2: T): T = ???
 }
 
 object Test {

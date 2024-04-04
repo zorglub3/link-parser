@@ -46,7 +46,6 @@ class LinkParserSpec extends AnyFlatSpec with Matchers {
     val rules = linkRules()
     val parser = new LinkParser[String](rules.wordRules.toMap)
 
-    // parser.check(List("////", "\\\\\\\\")) shouldBe 1
     parser.check(List("////", "the", "dog", "runs")) shouldBe 1
   }
 
@@ -54,7 +53,6 @@ class LinkParserSpec extends AnyFlatSpec with Matchers {
     val rules = linkRules()
     val parser = new LinkParser[String](rules.wordRules.toMap)
 
-    // parser.links(List("////", "\\\\\\\\")).length shouldBe 1
     parser.links(List("////", "the", "dog", "runs")).length shouldBe 1
   }
 

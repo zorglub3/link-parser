@@ -67,5 +67,25 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
       t(s._1).map(p.links).map(_.length) shouldBe Right(s._2)
     }
   }
+
+  it should "produce the correct graph for a sentence" in {
+    val t = tokenizer
+    val p = parser
+    val s = "i run"
+
+    val gs = t(s).map(p.links)
+
+    import link.graph.SentenceEdgeSyntax._
+    import link.graph.SentenceEdge
+    import link.english.lexicon.EnglishLinkTags._
+    
+    gs match {
+      case Right(List(g)) => {
+        g.edges.toList.length shouldBe 1
+        assert(g.contains(1 ~ 2 :+ S))
+      }
+      case _ => fail("Should be a single graph")
+    }
+  }
 }
 

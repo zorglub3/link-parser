@@ -28,4 +28,3 @@ object SentenceEdgeSyntax {
 
   object +: extends UnapplyLabel[Node, Label]
 }
-
