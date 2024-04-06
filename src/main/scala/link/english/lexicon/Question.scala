@@ -16,6 +16,8 @@ case class Question() extends EnglishLexiconEntry {
       "how" -> (l(W) & opt(r(A)) & r(Q)))
 
   def words = List("who", "what", "where", "why", "when", "how")
+
+  def wordTags = List.empty // STUB
 }
 
 

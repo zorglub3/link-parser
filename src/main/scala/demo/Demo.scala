@@ -4,10 +4,17 @@ import link.tokenizer.Tokenizer
 import link.parser.LinkParser
 import link.english._
 
-object Demo {
-  def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns
-  def tokenLexicon = b.tokenLexicon
-  def tokenizer = new Tokenizer[String](tokenLexicon, " ")
-  def rules = b.linkRules
-  def parser = new LinkParser[String](rules)
+class Demo {
+  val builder = 
+    new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns
+  val tokenLexicon = builder.tokenLexicon
+  val tokenizer = new Tokenizer[String](tokenLexicon, " ")
+  val parser = new LinkParser[String](builder.linkRules)
+
+  def parseLinks(str: String) = {
+    for {
+      tokens <- tokenizer(str.toLowerCase)
+      links  =  parser.links(tokens)
+    } yield (tokens, links)
+  }
 }

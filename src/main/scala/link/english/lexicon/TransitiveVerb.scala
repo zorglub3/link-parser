@@ -1,7 +1,8 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.{LinkRule, LinkRuleSyntax, WordTag}
 import link.english.lexicon.EnglishLinkTags._
+import link.english.lexicon.EnglishWordTags._
 
 case class TransitiveVerb(
   root: String,
@@ -33,4 +34,11 @@ case class TransitiveVerb(
         (l(Tr) & r(O)))
 
   def words = List(root, presentSingular, presentPlural, presentParticiple, past, pastParticiple)
+
+  def wordTags: List[(String, List[WordTag])] = List(
+    root -> List(Transitive, Verb, Root),
+    presentSingular -> List(Transitive, Verb, Present, Singular),
+    presentPlural -> List(Transitive, Verb, Present, Plural),
+    past -> List(Transitive, Verb, Past),
+  )
 }

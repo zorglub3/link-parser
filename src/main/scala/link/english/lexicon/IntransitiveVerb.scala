@@ -2,6 +2,7 @@ package link.english.lexicon
 
 import link.rule.{LinkRule, LinkRuleSyntax}
 import link.english.lexicon.EnglishLinkTags._
+import link.english.lexicon.EnglishWordTags._
 
 case class IntransitiveVerb(
   root: String,
@@ -25,4 +26,11 @@ case class IntransitiveVerb(
       pastParticiple -> l(Ta))
 
   def words = List(root, presentSingular, presentPlural, presentParticiple, past, pastParticiple)
+
+  def wordTags = List(
+    root -> List(Intransitive, Verb, Root),
+    presentSingular -> List(Intransitive, Verb, Present, Singular),
+    presentPlural -> List(Intransitive, Verb, Present, Plural),
+    past -> List(Intransitive, Verb, Past),
+  )
 }

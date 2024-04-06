@@ -12,5 +12,7 @@ case object Wall extends EnglishLexiconEntry {
     List(Tokenizer.LEFT_WALL -> opt(r(W)))
 
   def words = List() // NB Not a word that the tokenizer _finds_. It puts it in there on its own
+
+  def wordTags = List.empty // STUB?
 }
 

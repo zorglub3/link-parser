@@ -2,6 +2,7 @@ package link.english.lexicon
 
 import link.rule.{LinkRule, LinkRuleSyntax}
 import link.english.lexicon.EnglishLinkTags._
+import link.english.lexicon.EnglishWordTags._
 
 case class PersonalPronoun(
   nominative: String,
@@ -30,6 +31,14 @@ case class PersonalPronoun(
       accusative -> (l(O) | l(R))) // TODO possessive
 
   def words = List(nominative, accusative, possessive)
+
+  def baseTags = List(Pronoun, Person(person)) :+ (if(isPlural) Plural else Singular)
+  
+  def wordTags = List(
+    nominative -> (Nominative :: baseTags),
+    accusative -> (Accusative :: baseTags),
+    possessive -> (Possessive :: baseTags),
+  )
 }
 
 case class DemonstrativePronoun(
@@ -43,5 +52,7 @@ case class DemonstrativePronoun(
     List() // STUB
 
   def words = List(singular, plural)
+
+  def wordTags = List.empty // STUB
 }
 

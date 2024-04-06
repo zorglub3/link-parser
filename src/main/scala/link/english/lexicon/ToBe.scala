@@ -18,6 +18,8 @@ case class ToBe() extends EnglishLexiconEntry {
       "were" -> ((l(Spp) & opt(r(N)) & toBeObj) | (r(Sq("pp")) & opt(r(N)) & toBeObj)))
 
   def words = List("am", "are", "is", "was", "were")
+
+  def wordTags = List.empty // STUB
 }
 
 

@@ -1,7 +1,8 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.{LinkRule, LinkRuleSyntax, WordTag}
 import link.english.lexicon.EnglishLinkTags._
+import link.english.lexicon.EnglishWordTags._
 
 case class Noun(
   singular: String,
@@ -18,4 +19,8 @@ case class Noun(
       plural -> ((pluralNoun & l(Sq("p"))) | (pluralNoun & r(Sp)) | (pluralNoun & l(O)) | (pluralNoun & l(R)) | (pluralNoun & l(W))))
 
   def words = List(singular, plural)
+
+  def wordTags: List[(String, List[WordTag])] = List(
+    singular -> List(EnglishWordTags.Noun, Singular),
+    plural -> List(EnglishWordTags.Noun, Plural))
 }
