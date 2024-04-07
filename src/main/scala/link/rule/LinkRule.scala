@@ -5,7 +5,7 @@ object LinkRule {
     def mergeWith(other: NormalForm) = NormalForm(disjunction ++ other.disjunction)
   }
 
-  def debugPrintNormalForm(n: NormalForm) {
+  def debugPrintNormalForm(n: NormalForm): Unit = {
     for(ll <- n.disjunction) {
       debugPrintLinkList(ll)
     }
@@ -17,7 +17,7 @@ object LinkRule {
     def rightLinks = r.reverse
   }
   
-  def debugPrintLinkList(ll: LinkList) {
+  def debugPrintLinkList(ll: LinkList): Unit = {
     println(s"${ll.leftLinks.map(_.linkTag.name).mkString(" & ")} <-> ${ll.rightLinks.map(_.linkTag.name).mkString(" & ")}")
   }
 
@@ -60,13 +60,13 @@ trait LinkRuleSet[W] {
 
   val wordRules = collection.mutable.HashMap.empty[W, NormalForm]
 
-  def addLinkRule(w: W, r: NormalForm) {
+  def addLinkRule(w: W, r: NormalForm): Unit = {
     val newRule = wordRules.get(w).map { _ | r } getOrElse(r)
     wordRules.update(w, newRule)
   }
 
   implicit class RuleSyntax(word: W) {
-    def :-(r: NormalForm) {
+    def :-(r: NormalForm): Unit = {
       addLinkRule(word, r)
     }
   }

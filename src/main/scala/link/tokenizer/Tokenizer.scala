@@ -12,7 +12,7 @@ class Tokenizer[W](lexicon: TokenLexicon[W], delimiters: String) {
       builder += stringTokens.nextToken
     }
 
-    val tokens = lexicon.concat(builder.result)
+    val tokens = lexicon.concat(builder.result())
 
     for(t <- tokens) {
       if(lexicon.lookup(t).isEmpty) {
@@ -20,7 +20,7 @@ class Tokenizer[W](lexicon: TokenLexicon[W], delimiters: String) {
       }
     }
     
-    val unrecognized = missing.result
+    val unrecognized = missing.result()
 
     if(unrecognized.isEmpty) {
       Right(lexicon.leftWall +: tokens.flatMap(lexicon.lookup(_).getOrElse(List.empty)))

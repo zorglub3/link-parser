@@ -4,8 +4,6 @@ import link.rule._
 import link.english.lexicon.EnglishLexiconEntry
 import link.tokenizer.{TokenLexicon, StringTokenLexiconBuilder}
 
-import scala.collection.mutable.HashMap
-
 class EnglishLexiconBuilder {
   lazy val entries = List.newBuilder[EnglishLexiconEntry]
 
@@ -14,7 +12,13 @@ class EnglishLexiconBuilder {
 
   def tokenLexicon: TokenLexicon[String] = {
     val builder = new StringTokenLexiconBuilder
-    for(e <- entries.result) e.words.foreach(builder.addToken)
+
+    for(e <- entries.result()) e.words.foreach(builder.addToken)
+
+    for(e <- entries.result()) e.wordTags.foreach { p => 
+      p._2.foreach(builder.addTokenTag(p._1, _))
+    }
+
     builder.result
   }
 
@@ -22,7 +26,7 @@ class EnglishLexiconBuilder {
     val linkRuleSet = new LinkRuleSet[String] {}
 
     for {
-      e <- entries.result
+      e <- entries.result()
       (word, rule) <- e.linkRules.toList
     } linkRuleSet.addLinkRule(word, rule)
 

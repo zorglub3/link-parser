@@ -7,6 +7,10 @@ This is work in progress. The basic grammar/parser functionality is much
 in place, so if you are working on a similar project, this might be useful
 for you. Otherwise it won't be useful.
 
+## Is it any good?
+
+Yes.
+
 ## License and warranty
 
 This software ain't fit for any particular purpose. It ain't finished yet, 
@@ -16,13 +20,9 @@ something like that.
 
 ## Stuff to do
 
-- More sentence structures:
-  1. Not just present and past, but also present- and past- participle
-  2. Quesion words
-  3. Adverbs and adjectives
-  4. ... and more...
-- Better graph structure represent sentence links. Use labelled, directed
-  edges.
+- More sentence structures. The tests include more sentences structures 
+  than the parser can currently handle. This is intentional. It indicates
+  the direction for future additions.
 - Data structure for a logical representation of sentence "meaning". Also,
   some sentence generator (ie, word list) from such representation. And a
   graph-to-representation function

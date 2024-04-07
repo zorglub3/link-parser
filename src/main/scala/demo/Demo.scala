@@ -3,6 +3,7 @@ package demo
 import link.tokenizer.Tokenizer
 import link.parser.LinkParser
 import link.english._
+import link.graph.GraphInterpreter
 
 class Demo {
   val builder = 
@@ -12,9 +13,8 @@ class Demo {
   val parser = new LinkParser[String](builder.linkRules)
 
   def parseLinks(str: String) = {
-    for {
-      tokens <- tokenizer(str.toLowerCase)
-      links  =  parser.links(tokens)
-    } yield (tokens, links)
+    tokenizer(str.toLowerCase).map { tokens =>
+      (new GraphInterpreter(tokens.toVector, tokenLexicon), parser.links(tokens))
+    }
   }
 }

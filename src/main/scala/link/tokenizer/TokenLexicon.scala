@@ -22,14 +22,14 @@ class StringTokenLexiconBuilder {
     tokens.add(t)
   }
 
-  def addConcatToken(parts: Seq[String]): Unit = {
+  def addConcatToken(parts: List[String]): Unit = {
     concatTokens.addBinding(parts.head, parts.tail.toList)
   }
 
   def addToken(t: String): Unit = {
     if(t.contains('_')) {
       val parts = t.split("_")
-      addConcatToken(parts)
+      addConcatToken(parts.toList)
     } 
 
     addStringToken(t)
@@ -75,7 +75,7 @@ class StringTokenLexiconBuilder {
       @annotation.tailrec
       def iterate(acc: Builder[String, List[String]], rest: List[String]): List[String] = {
         rest match {
-          case Nil => acc.result.reverse
+          case Nil => acc.result().reverse
           case h :: t => {
             val tails = concatTokensMap.getOrElse(h, Set.empty).toList.sortBy(_.length).reverse
 
