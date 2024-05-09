@@ -1,4 +1,4 @@
-# Link parser in Scale
+# Link parser in Scala
 
 This is a small project to implement a library for supporting a link 
 grammar and parser for the English language.
@@ -26,8 +26,15 @@ something like that.
 - Data structure for a logical representation of sentence "meaning". Also,
   some sentence generator (ie, word list) from such representation. And a
   graph-to-representation function
+- Part of speach, POS, can be inferred from what links apply to each word. 
+  Currently, each words gets tagged with _all_ tags found for said word in
+  the dictionary. This set of tags can be limited, if the tags are applied
+  while processing the link rules.
 
 ## References
 
 - "Parsing English with a Link Grammar", Daniel D. K. Sleator and Davy
   Temperly, 1991
+- [The CMU link grammar natural language parser](https://github.com/opencog/link-grammar) is
+  a C implementation based on the original CMU link parser. It has bindings
+  to other languages including Java and thus Scala.
