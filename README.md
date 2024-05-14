@@ -7,6 +7,20 @@ This is work in progress. The basic grammar/parser functionality is much
 in place, so if you are working on a similar project, this might be useful
 for you. Otherwise it won't be useful.
 
+## Purpose
+
+This library is made with several purposes in mind. It can be used for:
+
+- The basis for an interface for interactive fiction. Instead of only 
+  handling the traditional, simple verb-plus-noun sentences, a modern
+  IF should understand way more sentence forms.
+- An shell for an old-fashioned (read pre-transformer) expert system.
+- An interface to work with a large language model.
+
+The library does not work so well when faced with English sentences that
+may not be grammatically correct. This makes it unsuitable for parsing, eg, 
+Twitter/X posts or scraping other parts of the internet.
+
 ## Is it any good?
 
 Yes.
@@ -22,7 +36,8 @@ something like that.
 
 - More sentence structures. The tests include more sentences structures 
   than the parser can currently handle. This is intentional. It indicates
-  the direction for future additions.
+  the direction for future additions. Failing tests are commented out.
+  Uncomment when adding new features.
 - Data structure for a logical representation of sentence "meaning". Also,
   some sentence generator (ie, word list) from such representation. And a
   graph-to-representation function

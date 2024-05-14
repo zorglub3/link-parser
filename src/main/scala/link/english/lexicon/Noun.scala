@@ -13,10 +13,17 @@ case class Noun(
   val singularNoun = opt(l(J)) & l(Ds) & opt(r(P))
   val pluralNoun = opt(l(J)) & opt(l(Dp)) & opt(r(P))
 
+  val singularNounVerb =
+    l(Sq("s")) | r(Ss) | l(O)
+  val pluralNounVerb =
+    l(Sq("p")) | r(Ss) | l(O)
+    
   def linkRules: List[(String, LinkRule.NormalForm)] =
     List(
-      singular -> ((singularNoun & l(Sq("s"))) | (singularNoun & r(Ss)) | (singularNoun & l(O)) | (singularNoun & l(R)) | (singularNoun & l(W))),
-      plural -> ((pluralNoun & l(Sq("p"))) | (pluralNoun & r(Sp)) | (pluralNoun & l(O)) | (pluralNoun & l(R)) | (pluralNoun & l(W))))
+      singular -> 
+        ((singularNoun & singularNounVerb) | (singularNoun & l(R)) | (singularNoun & l(W))),
+      plural -> 
+        ((pluralNoun & pluralNounVerb) | (pluralNoun & l(R)) | (pluralNoun & l(W))))
 
   def words = List(singular, plural)
 

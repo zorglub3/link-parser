@@ -45,7 +45,7 @@ trait StandardWords { self: EnglishLexiconBuilder =>
     Preposition("on"),
     Preposition("like"),
 
-    Question()
+    Question(),
   ))
 
   val abbreviatoins = Map(

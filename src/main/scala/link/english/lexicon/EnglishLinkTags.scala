@@ -9,7 +9,7 @@ object EnglishLinkTags {
   case object Sp extends LinkTag("Sp") // plural
   case object Spi extends LinkTag("Spi") // first person singular
   case object Spp extends LinkTag("Spp") // pluralis for eg "you are", "they are" - to avoid "I are"
-  case class Sq(suffix: String) extends LinkTag("Sq" + suffix)
+  case class Sq(suffix: String) extends LinkTag("Sq" + suffix) // for questions with 'to-be', eg, "who am i"
   // O: verb-object binding
   case object O extends LinkTag("O")
   // D*: determiner-noun binding
@@ -44,7 +44,7 @@ object EnglishLinkTags {
   case object Wn extends LinkTag("Wn") // link to noun for noun-phrases
   case object Wv extends LinkTag("Wv") // link to verb for commands
   case object WW extends LinkTag("WW") // link to the other wall
-  // B don't know what this is...
+  // B to-be/link-verb-adjective binding
   case object B extends LinkTag("B")
 }
 

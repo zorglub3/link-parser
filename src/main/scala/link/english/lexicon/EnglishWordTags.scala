@@ -31,4 +31,9 @@ object EnglishWordTags {
   case object Root extends WordTag("root")
   case object Present extends WordTag("present")
   case object Past extends WordTag("past")
+
+  // adjective
+  case object Absolute extends WordTag("absolute")
+  case object Comparative extends WordTag("comparative")
+  case object Superlative extends WordTag("superlative")
 }

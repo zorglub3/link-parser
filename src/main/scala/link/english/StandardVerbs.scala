@@ -21,6 +21,9 @@ trait StandardVerbs { self: EnglishLexiconBuilder =>
     TransitiveVerb("drink", "drinks", "drink", "drinking", "drank", "drunken"),
     TransitiveVerb("see", "sees", "see", "seeing", "saw", "seen"),
 
+    LinkVerb("look", "looks", "look", "looking", "looked", "looked"),
+    LinkVerb("smell", "smells", "smell", "smelling", "smelled", "smelled"),
+
     ToBe()
   ))
 }
