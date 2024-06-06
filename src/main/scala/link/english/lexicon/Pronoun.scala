@@ -48,8 +48,17 @@ case class DemonstrativePronoun(
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
 
+  def nominativeSingular = r(Ss) | l(Sq("s"))
+  def nominativePlural = r(Spp) | l(Sq("pp"))
+  def accusative = l(O) | l(R)
+
   def linkRules: List[(String, LinkRule.NormalForm)] =
-    List() // STUB
+    List(
+      singular -> nominativeSingular,
+      singular -> accusative,
+      plural -> nominativePlural,
+      plural -> accusative,
+    )
 
   def words = List(singular, plural)
 

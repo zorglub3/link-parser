@@ -1,6 +1,6 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 
 // TODO adjectives where comparative and superlative are made with "more" and "most"

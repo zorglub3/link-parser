@@ -56,6 +56,11 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     "it looks like a table" -> 1,
     "he looks small" -> 1,
     "look small" -> 1,
+    "this looks small" -> 1,
+    "this look small" -> 0,
+    "this looks like that" -> 1,
+    "those look big" -> 1,
+    "those are big" -> 1,
   )
 
   "An English parser checker" should "dummy" in {
