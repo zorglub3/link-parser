@@ -7,10 +7,10 @@ import link.graph.SentenceEdgeSyntax
 import link.graph.ImmutableSentenceGraph.{T => SentenceGraph}
 
 class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
-  def sentenceRules(sentence: List[W]): Option[List[LinkRule.NormalForm]] = 
+  def sentenceRules(sentence: Vector[W]): Option[Vector[LinkRule.NormalForm]] = 
     sentence.traverse(ruleMap.get _)
 
-  def check(words: List[W]): Int = {
+  def check(words: Vector[W]): Int = {
     sentenceRules(words).fold(0) { rules =>
       def linkMatch(a: List[LinkRule.RightLink], b: List[LinkRule.LeftLink]): Boolean = {
         (a, b) match {
@@ -79,33 +79,33 @@ class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
     }
   }
 
-  def links(words: List[W]): List[SentenceGraph] = {
+  def links(words: Vector[W]): List[ParseResult[W]] = {
     import SentenceEdgeSyntax._
 
-    sentenceRules(words).fold(List.empty[SentenceGraph]) { rules =>
-      def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[SentenceGraph] = 
+    sentenceRules(words).fold(List.empty[ParseResult[W]]) { rules =>
+      def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[ParseResult[W]] = 
         (as, bs) match {
           case (a :: _, b :: _) if a.linkTag.matches(b.linkTag) => {
-            List(ImmutableSentenceGraph.from(List(w1, w2), List(w1 ~ w2 :+ a.linkTag.simplify)))
+            List(ParseResult.withLink(words, w1, w2, a.linkTag))
           }
           case _ => List.empty
         }
 
-      def product(as: List[SentenceGraph], bs: => List[SentenceGraph]): List[SentenceGraph] = 
+      def product(as: List[ParseResult[W]], bs: => List[ParseResult[W]]): List[ParseResult[W]] = 
         for {
           a <- as
           b <- bs
-        } yield a union b
+        } yield a merge b
 
-      def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[SentenceGraph] = {
+      def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[ParseResult[W]] = {
         if(leftIndex + 1 == rightIndex) {
           if(l.isEmpty && r.isEmpty) {
-            List(ImmutableSentenceGraph.empty)
+            List(ParseResult.emptyFromWords(words))
           } else {
             List()
           }
         } else {
-          val links = collection.mutable.ListBuffer[SentenceGraph]()
+          val links = collection.mutable.ListBuffer[ParseResult[W]]()
 
           for(w <- leftIndex + 1 until rightIndex) {
             for(d <- rules(w).disjunction) {
@@ -128,7 +128,7 @@ class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
         }
       }
 
-      def conjunctParses(start: Int, conjunct: LinkRule.LinkList): List[SentenceGraph] = {
+      def conjunctParses(start: Int, conjunct: LinkRule.LinkList): List[ParseResult[W]] = {
         if(conjunct.leftLinks.isEmpty) {
           if(conjunct.rightLinks.isEmpty && start < words.length) {
             rules(start + 1).disjunction.map { conjunct2 =>

@@ -4,7 +4,7 @@ import collection.mutable.{HashSet, HashMap, MultiMap, Builder, Set => MutableSe
 import link.rule.WordTag
 
 trait TokenLexicon[W] {
-  def lookup(str: String): Option[List[W]]
+  def lookup(str: String): Option[Vector[W]]
   def tags(token: W): Seq[WordTag]
   def concat(tokens: List[String]): List[String]
   def leftWall: W
@@ -44,8 +44,8 @@ class StringTokenLexiconBuilder {
     val concatTokensMap = concatTokens.clone()
     val tags = tokenTags.clone()
 
-    def lookup(t: String): Option[List[String]] =
-      if(tokenSet.contains(t)) { Some(List(t)) } else { None }
+    def lookup(t: String): Option[Vector[String]] =
+      if(tokenSet.contains(t)) { Some(Vector(t)) } else { None }
 
     def tags(token: String): List[WordTag] = 
       tags.get(token).map(_.toList).getOrElse(List.empty)

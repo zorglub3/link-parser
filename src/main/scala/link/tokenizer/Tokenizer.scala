@@ -3,7 +3,7 @@ package link.tokenizer
 import java.util.StringTokenizer
 
 class Tokenizer[W](lexicon: TokenLexicon[W], delimiters: String) {
-  def apply(str: String): Either[UnrecognizedTokens, List[W]] = {
+  def apply(str: String): Either[UnrecognizedTokens, Vector[W]] = {
     val stringTokens = new StringTokenizer(str, delimiters)
     val builder = List.newBuilder[String]
     val missing = List.newBuilder[String]
@@ -23,7 +23,7 @@ class Tokenizer[W](lexicon: TokenLexicon[W], delimiters: String) {
     val unrecognized = missing.result()
 
     if(unrecognized.isEmpty) {
-      Right(lexicon.leftWall +: tokens.flatMap(lexicon.lookup(_).getOrElse(List.empty)))
+      Right(lexicon.leftWall +: tokens.toVector.flatMap(lexicon.lookup(_).getOrElse(Vector.empty)))
     } else {
       Left(UnrecognizedTokens(unrecognized))
     }

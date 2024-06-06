@@ -101,8 +101,8 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     
     gs match {
       case Right(List(g)) => {
-        g.edges.toList.length shouldBe 1
-        assert(g.contains(1 ~ 2 :+ S))
+        g.graph.edges.toList.length shouldBe 1
+        assert(g.graph.contains(1 ~ 2 :+ S))
       }
       case _ => fail("Should be a single graph")
     }
