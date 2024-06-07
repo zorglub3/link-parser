@@ -10,7 +10,7 @@ class Demo {
     new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns
   val tokenLexicon = builder.tokenLexicon
   val tokenizer = new Tokenizer[String](tokenLexicon, " ")
-  val parser = new LinkParser[String](builder.linkRules)
+  val parser = new LinkParser[String](builder.ruleMap)
 
   def parseLinks(str: String) = {
     tokenizer(str.toLowerCase).map { tokens =>

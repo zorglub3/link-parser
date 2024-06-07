@@ -10,8 +10,7 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
   def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives
   def tokenLexicon = b.tokenLexicon
   def tokenizer = new Tokenizer[String](tokenLexicon, " ")
-  def rules = b.linkRules
-  def parser = new LinkParser[String](rules)
+  def parser = new LinkParser[String](b.ruleMap)
 
   // Some tests are failing - not everything is finished here. It is TDD.
   // Failing tests are commented out. Uncomment while developing.
@@ -23,7 +22,7 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     "he ran" -> 1,
     "it is a table" -> 1,
     "she is walking" -> 1,
-    "you pick up the table" -> 2,
+    "you pick up the table" -> 1,
     "i pick up the table" -> 1,
     "she picked up the table" -> 1,
     "we are picking up the table" -> 1,

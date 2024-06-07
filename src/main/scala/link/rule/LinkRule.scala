@@ -70,5 +70,15 @@ trait LinkRuleSet[W] {
       addLinkRule(word, r)
     }
   }
+
+  def makeRuleMap: RuleMap[W] = {
+    val ruleMap = new RuleMap[W]
+
+    for((word, rule) <- wordRules) {
+      ruleMap.addEntry(word, List.empty, List(rule))
+    }
+
+    ruleMap
+  }
 }
 

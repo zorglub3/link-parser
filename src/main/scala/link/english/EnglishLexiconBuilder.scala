@@ -32,4 +32,18 @@ class EnglishLexiconBuilder {
 
     linkRuleSet.wordRules.toMap
   }
+
+  def ruleMap: RuleMap[String] = {
+    val ruleMapResult: RuleMap[String] = new RuleMap
+
+    for {
+      e <- entries.result()
+      (word, rule) <- e.linkRules.toList
+    } {
+      val tags = e.wordTags.filter(_._1 == word).map(_._2).flatten
+      ruleMapResult.addEntry(word, tags, List(rule))
+    }
+
+    ruleMapResult
+  }
 }

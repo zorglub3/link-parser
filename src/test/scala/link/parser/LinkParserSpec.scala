@@ -20,9 +20,10 @@ class LinkParserSpec extends AnyFlatSpec with Matchers {
     "////" :- opt(r(W))
   }
 
+  def ruleMap(): RuleMap[String] = linkRules().makeRuleMap
+  
   "A link parser" should "check and accept simple sentences" in {
-    val rules = linkRules()
-    val parser = new LinkParser[String](rules.wordRules.toMap)
+    val parser = new LinkParser[String](ruleMap())
 
     parser.check(Vector("the", "dog", "runs")) shouldBe 1
     parser.check(Vector("dogs", "run")) shouldBe 1
@@ -32,8 +33,7 @@ class LinkParserSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "find correct number of sets of links in simple sentences" in {
-    val rules = linkRules()
-    val parser = new LinkParser[String](rules.wordRules.toMap)
+    val parser = new LinkParser[String](ruleMap())
 
     parser.links(Vector("the", "dog", "runs")).length shouldBe 1
     parser.links(Vector("dogs", "run")).length shouldBe 1
@@ -43,41 +43,33 @@ class LinkParserSpec extends AnyFlatSpec with Matchers {
   }
 
   it should "check a sentence even when there is a wall" in {
-    val rules = linkRules()
-    val parser = new LinkParser[String](rules.wordRules.toMap)
+    val parser = new LinkParser[String](ruleMap())
 
     parser.check(Vector("////", "the", "dog", "runs")) shouldBe 1
   }
 
   it should "parse a sentence even when there is a wall" in {
-    val rules = linkRules()
-    val parser = new LinkParser[String](rules.wordRules.toMap)
+    val parser = new LinkParser[String](ruleMap())
 
     parser.links(Vector("////", "the", "dog", "runs")).length shouldBe 1
   }
 
   it should "not parse a noun phrase" in {
-    val rules = linkRules()
-
-    val parser = new LinkParser[String](rules.wordRules.toMap)
+    val parser = new LinkParser[String](ruleMap())
 
     parser.check(Vector("the", "dog")) shouldBe 0
     parser.links(Vector("the", "dog")).length shouldBe 0
   }
 
   it should "not parse a single plural noun" in {
-    val rules = linkRules()
-
-    val parser = new LinkParser[String](rules.wordRules.toMap)
+    val parser = new LinkParser[String](ruleMap())
 
     parser.check(Vector("dogs")) shouldBe 0
     parser.links(Vector("dogs")).length shouldBe 0
   }
 
   it should "not parse malformed sentences" in {
-    val rules = linkRules()
-
-    val parser = new LinkParser[String](rules.wordRules.toMap)
+    val parser = new LinkParser[String](ruleMap())
 
     parser.check(Vector("the", "runs", "dog")) shouldBe 0
     parser.links(Vector("the", "runs", "dog")).length shouldBe 0

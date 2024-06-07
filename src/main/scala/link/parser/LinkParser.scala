@@ -2,13 +2,10 @@ package link.parser
 
 import cats.implicits._
 import link.rule._
-import link.graph.ImmutableSentenceGraph
-import link.graph.SentenceEdgeSyntax
-import link.graph.ImmutableSentenceGraph.{T => SentenceGraph}
 
-class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
+class LinkParser[W](val ruleMap: RuleMap[W]) {
   def sentenceRules(sentence: Vector[W]): Option[Vector[LinkRule.NormalForm]] = 
-    sentence.traverse(ruleMap.get _)
+    sentence.traverse(ruleMap.lookupLinkRules _)
 
   def check(words: Vector[W]): Int = {
     sentenceRules(words).fold(0) { rules =>
@@ -80,8 +77,6 @@ class LinkParser[W](val ruleMap: Map[W, LinkRule.NormalForm]) {
   }
 
   def links(words: Vector[W]): List[ParseResult[W]] = {
-    import SentenceEdgeSyntax._
-
     sentenceRules(words).fold(List.empty[ParseResult[W]]) { rules =>
       def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[ParseResult[W]] = 
         (as, bs) match {
