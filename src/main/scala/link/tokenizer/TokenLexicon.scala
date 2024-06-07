@@ -14,18 +14,15 @@ trait TokenLexicon[W] {
 class StringTokenLexiconBuilder {
   val tokens = HashSet[String]()
   val tokenTags = MultiDict.empty[String, WordTag]
-  // val tokenTags = new HashMap[String, MutableSet[WordTag]] with MultiMap[String, WordTag]
 
   val concatTokens =
     MultiDict.empty[String, List[String]]
-    // new HashMap[String, MutableSet[List[String]]] with MultiMap[String, List[String]]
 
   def addStringToken(t: String): Unit = {
     tokens.add(t)
   }
 
   def addConcatToken(parts: List[String]): Unit = {
-    // concatTokens.addBinding(parts.head, parts.tail.toList)
     concatTokens.addOne(parts.head -> parts.tail.toList)
   }
 
@@ -39,7 +36,6 @@ class StringTokenLexiconBuilder {
   }
 
   def addTokenTag(t: String, tag: WordTag): Unit = {
-    // tokenTags.addBinding(t, tag)
     tokenTags.addOne(t -> tag)
   }
 
@@ -53,7 +49,6 @@ class StringTokenLexiconBuilder {
 
     def tags(token: String): List[WordTag] = 
       tags.get(token).toList
-      //tags.get(token).map(_.toList).getOrElse(List.empty)
     
     def concat(tokens: List[String]): List[String] = {
       def matchList(head: String, pattern: List[String], tail: List[String]): Option[(String, List[String])] = {
@@ -82,7 +77,6 @@ class StringTokenLexiconBuilder {
         rest match {
           case Nil => acc.result().reverse
           case h :: t => {
-            // val tails = concatTokensMap.getOrElse(h, Set.empty).toList.sortBy(_.length).reverse
             val tails = concatTokensMap.get(h).toList.sortBy(_.length)
 
             findFirst(tails, matchList(h, _, t)) match {
