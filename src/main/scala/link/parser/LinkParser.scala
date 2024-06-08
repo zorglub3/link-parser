@@ -7,6 +7,9 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
   def sentenceRules(sentence: Vector[W]): Option[Vector[LinkRule.NormalForm]] = 
     sentence.traverse(ruleMap.lookupLinkRules _)
 
+  def ruleMapEntries(sentence: Vector[W]): Vector[List[RuleMap.Entry]] =
+    sentence.map(ruleMap.lookup)
+    
   def check(words: Vector[W]): Int = {
     sentenceRules(words).fold(0) { rules =>
       def linkMatch(a: List[LinkRule.RightLink], b: List[LinkRule.LeftLink]): Boolean = {
@@ -77,69 +80,83 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
   }
 
   def links(words: Vector[W]): List[ParseResult[W]] = {
-    sentenceRules(words).fold(List.empty[ParseResult[W]]) { rules =>
-      def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[ParseResult[W]] = 
-        (as, bs) match {
-          case (a :: _, b :: _) if a.linkTag.matches(b.linkTag) => {
-            List(ParseResult.withLink(words, w1, w2, a.linkTag))
-          }
-          case _ => List.empty
+    val wordRuleEntries = words.map(ruleMap.lookup _)
+
+    def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[ParseResult[W]] = 
+      (as, bs) match {
+        case (a :: _, b :: _) if a.linkTag.matches(b.linkTag) => {
+          List(ParseResult.withLink(words, w1, w2, a.linkTag))
         }
+        case _ => List.empty
+      }
 
-      def product(as: List[ParseResult[W]], bs: => List[ParseResult[W]]): List[ParseResult[W]] = 
-        for {
-          a <- as
-          b <- bs
-        } yield a merge b
+    def product(as: List[ParseResult[W]], bs: => List[ParseResult[W]]): List[ParseResult[W]] = 
+      for {
+        a <- as
+        b <- bs
+      } yield a merge b
 
-      def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[ParseResult[W]] = {
-        if(leftIndex + 1 == rightIndex) {
-          if(l.isEmpty && r.isEmpty) {
-            List(ParseResult.emptyFromWords(words))
-          } else {
-            List()
-          }
+    def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[ParseResult[W]] = {
+      if(leftIndex + 1 == rightIndex) {
+        if(l.isEmpty && r.isEmpty) {
+          List(ParseResult.emptyFromWords(words))
         } else {
-          val links = collection.mutable.ListBuffer[ParseResult[W]]()
+          List()
+        }
+      } else {
+        val links = collection.mutable.ListBuffer[ParseResult[W]]()
 
-          for(w <- leftIndex + 1 until rightIndex) {
-            for(d <- rules(w).disjunction) {
-              val leftLinks = product(makeLink(leftIndex, w, r, d.leftLinks), link(leftIndex, w, d.leftLinks.tail, r.tail))
-              val rightLinks = product(makeLink(w, rightIndex, d.rightLinks, l), link(w, rightIndex, l.tail, d.rightLinks.tail))
+        for(w <- leftIndex + 1 until rightIndex) {
+          for(entry <- wordRuleEntries(w)) {
+            val localLinks = collection.mutable.ListBuffer[ParseResult[W]]()
 
-              if(!leftLinks.isEmpty) {
-                links ++= product(leftLinks, link(w, rightIndex, l, d.rightLinks))
-              }
+            val tags = entry.wordTags
+            val linkRule = entry.linkRule
+            
+            val leftLinks = 
+              product(
+                makeLink(leftIndex, w, r, linkRule.leftLinks), 
+                link(leftIndex, w, linkRule.leftLinks.tail, r.tail))
 
-              if(!rightLinks.isEmpty) {
-                links ++= product(rightLinks, link(leftIndex, w, d.leftLinks, r))
-              }
+            val rightLinks = 
+              product(
+                makeLink(w, rightIndex, linkRule.rightLinks, l), 
+                link(w, rightIndex, l.tail, linkRule.rightLinks.tail))
 
-              links ++= product(leftLinks, rightLinks)
+            if(!leftLinks.isEmpty) {
+              localLinks ++= product(leftLinks, link(w, rightIndex, l, linkRule.rightLinks))
             }
-          }
 
-          links.toList
-        }
-      }
+            if(!rightLinks.isEmpty) {
+              localLinks ++= product(rightLinks, link(leftIndex, w, linkRule.leftLinks, r))
+            }
 
-      def conjunctParses(start: Int, conjunct: LinkRule.LinkList): List[ParseResult[W]] = {
-        if(conjunct.leftLinks.isEmpty) {
-          if(conjunct.rightLinks.isEmpty && start < words.length) {
-            rules(start + 1).disjunction.map { conjunct2 =>
-              conjunctParses(start + 1, conjunct2)
-            } .reduce(_ ++ _)
-          } else {
-            link(start, words.length, List.empty, conjunct.rightLinks)
+            localLinks ++= product(leftLinks, rightLinks)
+
+            links ++= localLinks.toList.map(_.tagWord(w, tags))
           }
-        } else {
-          List.empty
         }
+
+        links.toList
       }
- 
-      rules(0).disjunction.map { conjunct =>
-        conjunctParses(0, conjunct)
-      } .reduce(_ ++ _)
     }
+
+    def conjunctParses(start: Int, wordTags: List[WordTag], linkRule: LinkRule.LinkList): List[ParseResult[W]] = {
+      if(linkRule.leftLinks.isEmpty) {
+        if(linkRule.rightLinks.isEmpty && start < words.length) {
+          wordRuleEntries(start + 1).map { case RuleMap.Entry(wordTags, linkRule) =>
+            conjunctParses(start + 1, wordTags, linkRule)
+          } .reduce(_ ++ _)
+        } else {
+          link(start, words.length, List.empty, linkRule.rightLinks).map(_.tagWord(start, wordTags))
+        }
+      } else {
+        List.empty
+      }
+    }
+ 
+    wordRuleEntries(0).map { case RuleMap.Entry(wordTags, linkRule) =>
+      conjunctParses(0, wordTags, linkRule)
+    } .reduce(_ ++ _)
   }
 }

@@ -74,4 +74,20 @@ object ParseResult {
       Vector.fill(words.length)(List.empty),
     )
   }
+
+  def withTags[W](words: Vector[W], index: Int, tags: List[WordTag]): ParseResult[W] = {
+    import scala.language.postfixOps
+
+    ParseResult(
+      ImmutableSentenceGraph.from(0 until words.length toList, List.empty),
+      words,
+      Vector.tabulate(words.length) { n =>
+        if(n == index) {
+          tags
+        } else {
+          List.empty
+        }
+      }
+    )
+  }
 }
