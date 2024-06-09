@@ -10,13 +10,17 @@ object EnglishWordTags {
   case object Preposition extends WordTag("preposition")
   case object Pronoun extends WordTag("pronoun")
   case object Determiner extends WordTag("determiner")
+  case object Question extends WordTag("question")
+  case object Wall extends WordTag("wall")
 
   // pronoun person
   case class Person(person: Int) extends WordTag(s"person-$person")
+  case object Demonstrative extends WordTag("demonstrative")
   
   // verb
   case object Transitive extends WordTag("transitive")
   case object Intransitive extends WordTag("intransitive")
+  case object LinkVerb extends WordTag("linkverb")
 
   // case
   case object Nominative extends WordTag("nominative")
@@ -27,10 +31,16 @@ object EnglishWordTags {
   case object Singular extends WordTag("singular")
   case object Plural extends WordTag("plural")
 
+  // noun root
+  case class NounRoot(s: String) extends WordTag("nounroot " ++ s)
+
   // tense
   case object Root extends WordTag("root")
   case object Present extends WordTag("present")
   case object Past extends WordTag("past")
+  case object PresentParticiple extends WordTag("presentparticiple")
+  case object PastParticiple extends WordTag("pastparticiple")
+  case class VerbRoot(s: String) extends WordTag("verbroot " ++ s)
 
   // adjective
   case object Absolute extends WordTag("absolute")

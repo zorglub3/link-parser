@@ -1,6 +1,6 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax, WordTag}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 import link.english.lexicon.EnglishWordTags._
 
@@ -9,6 +9,7 @@ case class Noun(
   plural: String
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
   val singularNoun = opt(l(J)) & l(Ds) & opt(r(P))
   val pluralNoun = opt(l(J)) & opt(l(Dp)) & opt(r(P))
@@ -18,16 +19,17 @@ case class Noun(
   val pluralNounVerb =
     l(Sq("p")) | r(Ss) | l(O)
     
-  def linkRules: List[(String, LinkRule.NormalForm)] =
+  val wordEntries = 
     List(
-      singular -> 
+      WordEntry(
+        singular,
+        List(EnglishWordTags.Noun, Singular, NounRoot(singular)),
         ((singularNoun & singularNounVerb) | (singularNoun & l(R)) | (singularNoun & l(W))),
-      plural -> 
-        ((pluralNoun & pluralNounVerb) | (pluralNoun & l(R)) | (pluralNoun & l(W))))
-
-  def words = List(singular, plural)
-
-  def wordTags: List[(String, List[WordTag])] = List(
-    singular -> List(EnglishWordTags.Noun, Singular),
-    plural -> List(EnglishWordTags.Noun, Plural))
+      ),
+      WordEntry(
+        plural,
+        List(EnglishWordTags.Noun, Plural, NounRoot(singular)),
+        ((pluralNoun & pluralNounVerb) | (pluralNoun & l(R)) | (pluralNoun & l(W))),
+      ),
+    )
 }

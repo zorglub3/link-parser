@@ -10,7 +10,24 @@ case class Adjective(
   superlative: String,
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
+  val wordEntries =
+    List(
+      WordEntry( 
+        absolute, 
+        List(EnglishWordTags.Adjective, EnglishWordTags.Absolute),
+        (l(B) | r(J))
+      ),
+      WordEntry(
+        superlative,
+        List(EnglishWordTags.Adjective, EnglishWordTags.Superlative),
+        (l(B) | r(J))
+      ),
+      // TODO comparative form
+    )
+
+  /*
   def linkRules =
     List(
       absolute -> (l(B) | r(J)),
@@ -24,4 +41,5 @@ case class Adjective(
     comparative -> List(EnglishWordTags.Adjective, EnglishWordTags.Comparative),
     superlative -> List(EnglishWordTags.Adjective, EnglishWordTags.Superlative),
   )
+  */
 }

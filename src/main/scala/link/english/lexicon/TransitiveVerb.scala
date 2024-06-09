@@ -1,6 +1,6 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax, WordTag}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 import link.english.lexicon.EnglishWordTags._
 
@@ -13,32 +13,41 @@ case class TransitiveVerb(
   pastParticiple: String
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
   val activeVerbWithObject = opt(l(A)) & r(O) & opt(r(A)) & opt(r(P))
 
-  def linkRules: List[(String, LinkRule.NormalForm)] = 
+  val wordEntries =
     List(
-      root -> 
+      WordEntry(
+        root,
+        List(Verb, Root, Transitive),
         ((opt(l(Hr)) & l(W) & activeVerbWithObject) | 
          (l(Ss) & l(Hs) & activeVerbWithObject) | 
          (l(Sp) & l(Hp) & activeVerbWithObject) | 
          (l(Hp) & l(Sp) & activeVerbWithObject) | 
          (l(Hs) & l(Ss) & activeVerbWithObject)), // TODO - opt(l("Hr")) & l("W") ...
-      presentSingular -> 
+      ),
+      WordEntry(
+        presentSingular,
+        List(Verb, VerbRoot(root), Singular, Transitive, Present),
         (opt(l(A)) & l(Ss) & activeVerbWithObject),
-      presentPlural -> 
+      ),
+      WordEntry(
+        presentPlural,
+        List(Verb, VerbRoot(root), Plural, Transitive, Present),
         (opt(l(A)) & l(Sp) & activeVerbWithObject),
-      past -> 
+      ),
+      WordEntry(
+        past,
+        List(Verb, VerbRoot(root), Past, Transitive),
         (opt(l(A)) & l(S) & activeVerbWithObject),
-      presentParticiple ->
-        (l(Tr) & r(O)))
-
-  def words = List(root, presentSingular, presentPlural, presentParticiple, past, pastParticiple)
-
-  def wordTags: List[(String, List[WordTag])] = List(
-    root -> List(Transitive, Verb, Root),
-    presentSingular -> List(Transitive, Verb, Present, Singular),
-    presentPlural -> List(Transitive, Verb, Present, Plural),
-    past -> List(Transitive, Verb, Past),
-  )
+      ),
+      WordEntry(
+        presentParticiple,
+        List(Verb, VerbRoot(root), PresentParticiple, Transitive),
+        (l(Tr) & r(O)),
+      ),
+      // TODO past participle
+    )
 }

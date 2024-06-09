@@ -1,6 +1,6 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 
 case class LinkVerb(
@@ -12,28 +12,43 @@ case class LinkVerb(
   pastParticiple: String,
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
+  import EnglishWordTags._
 
   val activeVerbWithPredicate =
     opt(l(A)) & (r(P) | r(B))
 
-  def linkRules: List[(String, LinkRule.NormalForm)] =
+  val wordEntries =
     List(
-      root ->
+      WordEntry(
+        root,
+        List(Verb, EnglishWordTags.LinkVerb, Root, VerbRoot(root)),
         ((opt(l(Hr)) & l(W) & activeVerbWithPredicate) | 
          (l(Ss) & l(Hs) & activeVerbWithPredicate) | 
          (l(Sp) & l(Hp) & activeVerbWithPredicate) | 
          (l(Hp) & l(Sp) & activeVerbWithPredicate) | 
-         (l(Hs) & l(Ss) & activeVerbWithPredicate)), // TODO - opt(l("Hr")) & l("W") ...
-      presentSingular -> 
+         (l(Hs) & l(Ss) & activeVerbWithPredicate)), 
+      ),
+      WordEntry(
+        presentSingular,
+        List(Verb, EnglishWordTags.LinkVerb, VerbRoot(root), Present),
         (opt(l(A)) & l(Ss) & activeVerbWithPredicate),
-      presentPlural -> 
+      ),
+      WordEntry(
+        presentPlural,
+        List(Verb, EnglishWordTags.LinkVerb, VerbRoot(root), Present),
         (opt(l(A)) & l(Sp) & activeVerbWithPredicate),
-      past -> 
+      ),
+      WordEntry(
+        past,
+        List(Verb, EnglishWordTags.LinkVerb, VerbRoot(root), Past),
         (opt(l(A)) & l(S) & activeVerbWithPredicate),
-      presentParticiple ->
-        (l(Tr) & r(O)))
-
-  def words = List(root, presentSingular, presentPlural, presentParticiple, past, pastParticiple)
-
-  def wordTags = List( ) // TODO - STUB
+      ),
+      WordEntry(
+        presentParticiple,
+        List(Verb, EnglishWordTags.LinkVerb, VerbRoot(root), PresentParticiple),
+        (l(Tr) & r(O)),
+      ),
+      // TODO past participle
+    )
 }
