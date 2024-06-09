@@ -48,6 +48,25 @@ case class ParseResult[W](
       mergedTags,
     )  
   }
+
+  def tokenTags(position: Int): Seq[WordTag] =
+    tags.lift(position).getOrElse(Seq.empty)
+
+  def tokenHasTag(position: Int, tag: WordTag): Boolean = 
+    tokenTags(position).contains(tag)
+
+  import link.graph.SentenceEdgeSyntax._
+
+  def graphEdge(tag: LinkTag): Option[(Int, Int)] =
+    graph.edges.map(_.outer).collectFirst {
+      case x :~ y +: t if tag.matches(t) => (x min y, x max y)
+    }    
+
+  def graphEdgeFrom(tag: LinkTag)(position: Int): Option[Int] =
+    graph.edges.map(_.outer).collectFirst {
+      case position :~ y +: t if tag.matches(t) => y
+      case x :~ position +: t if tag.matches(t) => x
+    }
 }
 
 object ParseResult {
