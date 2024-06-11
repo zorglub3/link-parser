@@ -17,7 +17,7 @@ case class Noun(
   val singularNounVerb =
     l(Sq("s")) | r(Ss) | l(O)
   val pluralNounVerb =
-    l(Sq("p")) | r(Ss) | l(O)
+    l(Sq("p")) | r(Sp) | l(O)
     
   val wordEntries = 
     List(

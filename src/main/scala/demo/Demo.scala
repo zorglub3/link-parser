@@ -4,6 +4,7 @@ import link.tokenizer.Tokenizer
 import link.parser.LinkParser
 import link.english._
 import link.graph.GraphInterpreter
+import link.english.interpreter.EnglishInterpreter
 
 class Demo {
   val builder = 
@@ -15,6 +16,16 @@ class Demo {
   def parseLinks(str: String) = {
     tokenizer(str.toLowerCase).map { tokens =>
       (new GraphInterpreter(tokens.toVector, tokenLexicon), parser.links(tokens))
+    }
+  }
+
+  def interpret(str: String) = {
+    tokenizer(str.toLowerCase).map { tokens =>
+      val results = parser.links(tokens)
+      results.map { r =>
+        val int = new EnglishInterpreter(r)
+        int.interpretS()
+      }
     }
   }
 }

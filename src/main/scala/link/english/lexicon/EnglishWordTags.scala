@@ -14,9 +14,12 @@ object EnglishWordTags {
   case object Wall extends WordTag("wall")
   case object ProperNoun extends WordTag("propernoun")
 
-  // pronoun person
-  case class Person(person: Int) extends WordTag(s"person-$person")
+  // pronoun specific
+  case class Person(person: Int) extends WordTag("pronounperson")
   case object Demonstrative extends WordTag("demonstrative")
+  case object MaleGender extends WordTag("malegender")
+  case object FemaleGender extends WordTag("femalegender")
+  case object NeuterGender extends WordTag("neutergender")
   
   // verb
   case object Transitive extends WordTag("transitive")

@@ -9,7 +9,8 @@ case class PersonalPronoun(
   accusative: String,
   possessive: String,
   person: Int, // 1 2 or 3
-  isPlural: Boolean
+  isPlural: Boolean,
+  genderOpt: Option[link.rule.WordTag],
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
   import EnglishLexiconEntry.WordEntry
@@ -26,7 +27,9 @@ case class PersonalPronoun(
       }
     }
 
-  def baseTags = List(Pronoun, Person(person)) :+ (if(isPlural) Plural else Singular)
+  def gender = genderOpt.toList
+
+  def baseTags = gender ++ List(Pronoun, Person(person)) :+ (if(isPlural) Plural else Singular)
 
   val wordEntries =
     List(

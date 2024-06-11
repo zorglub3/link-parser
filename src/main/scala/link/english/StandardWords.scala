@@ -6,14 +6,14 @@ trait StandardWords { self: EnglishLexiconBuilder =>
   addEntries(List(
     Wall,
 
-    PersonalPronoun("i", "me", "mine", 1, false),
-    PersonalPronoun("you", "you", "your", 2, false),
-    PersonalPronoun("he", "him", "his", 3, false),
-    PersonalPronoun("she", "her", "hers", 3, false),
-    PersonalPronoun("it", "it", "its", 3, false),
-    PersonalPronoun("we", "us", "our", 1, true),
-    PersonalPronoun("you", "you", "your", 2, true),
-    PersonalPronoun("they", "them", "their", 3, true),
+    PersonalPronoun("i", "me", "mine", 1, false, None),
+    PersonalPronoun("you", "you", "your", 2, false, None),
+    PersonalPronoun("he", "him", "his", 3, false, Some(EnglishWordTags.MaleGender)),
+    PersonalPronoun("she", "her", "hers", 3, false, Some(EnglishWordTags.FemaleGender)),
+    PersonalPronoun("it", "it", "its", 3, false, Some(EnglishWordTags.NeuterGender)),
+    PersonalPronoun("we", "us", "our", 1, true, None),
+    PersonalPronoun("you", "you", "your", 2, true, None),
+    PersonalPronoun("they", "them", "their", 3, true, None),
 
     DemonstrativePronoun("this", "these", true),
     DemonstrativePronoun("that", "those", false),
