@@ -15,15 +15,8 @@ class RuleMap[W] {
   def lookup(word: W): List[RuleMap.Entry] =
     entries.get(word).toList
 
-  def lookupLinkRules(word: W): Option[LinkRule.NormalForm] = {
-    val conjunction = entries.get(word).map(_.linkRule).toList
-
-    if(conjunction.isEmpty) {
-      None
-    } else {
-      Some(LinkRule.NormalForm(conjunction))
-    }
-  }
+  def lookupLinkRules(word: W): LinkRule.NormalForm = 
+    LinkRule.NormalForm(entries.get(word).map(_.linkRule).toList)
 }
 
 object RuleMap {

@@ -49,6 +49,8 @@ class EnglishInterpreter(result: ParseResult[String]) {
   def isPlural(w: Int): Boolean =
     tokenHasTag(w, EnglishWordTags.Plural)
     
+  def isLinkVerb(w: Int): Boolean = ???
+  
   def pronounGender(w: Int): Option[NounPhrase.Gender] = {
     if(tokenHasTag(w, EnglishWordTags.MaleGender)) {
       Some(NounPhrase.MaleGender)
@@ -93,6 +95,8 @@ class EnglishInterpreter(result: ParseResult[String]) {
     }
   }
 
+  def interpretLV(w: Int): Option[(String, String)] = ???
+  
   def interpretImperative(): Option[SimpleSentence[NounPhrase[String], String]] = {
     for {
       (w, v) <- graphEdge(EnglishLinkTags.W)
@@ -118,7 +122,7 @@ class EnglishInterpreter(result: ParseResult[String]) {
       _ <- guard(isLinkVerb(v))
       np <- interpretNP(n)
       (v, p) <- interpretLV(v)
-    } yield SimpleSentence.LinkStatement(np, v, p)
+    } yield SimpleSentence.LinkStatement(np, v) // TODO add predicate
   }
   
   def interpretS(): Option[SimpleSentence[NounPhrase[String], String]] = {

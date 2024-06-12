@@ -1,19 +1,21 @@
 package link.language
 
-abstract class VerbPhrase[N, W](val verb: W) {
+sealed abstract class VerbPhrase[N, W](val verb: W) {
   val obj: Option[N]
+
+  def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (VerbPhrase[M, W], ContextMapper[N, M])] = ???
 }
 
 object VerbPhrase {
-  case class IntransitiveVerbPhrase[N, W](v: W) extends VerbPhrase[N, W](v) {
+  final case class IntransitiveVerbPhrase[N, W](v: W) extends VerbPhrase[N, W](v) {
     val obj = None
   }
 
-  case class TransitiveVerbPhrase[N, W](v: W, o: N) extends VerbPhrase[N, W](v) {
+  final case class TransitiveVerbPhrase[N, W](v: W, o: N) extends VerbPhrase[N, W](v) {
     val obj = Some(o)
   }
 
-  case class LinkVerbPhrase[N, W](v: W) extends VerbPhrase[N, W](v) {
+  final case class LinkVerbPhrase[N, W](v: W) extends VerbPhrase[N, W](v) {
     val obj = None
   }
 }
