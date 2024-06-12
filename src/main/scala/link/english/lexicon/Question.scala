@@ -1,23 +1,45 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 
 case class Question() extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
-  def linkRules: List[(String, LinkRule.NormalForm)] =
+  val wordEntries =
     List(
-      "who" -> (l(W) & r(Ss)),
-      "what" -> (l(W) & r(Ss)),
-      "where" -> (l(W) & r(Q)),
-      "why" -> (l(W) & r(Q)),
-      "when" -> (l(W) & r(Q)),
-      "how" -> (l(W) & opt(r(A)) & r(Q)))
-
-  def words = List("who", "what", "where", "why", "when", "how")
-
-  def wordTags = List.empty // STUB
+      WordEntry(
+        "who",
+        List(EnglishWordTags.Question),
+        l(W) & r(Ss),
+      ),
+      WordEntry(
+        "what",
+        List(EnglishWordTags.Question),
+        l(W) & r(Ss),
+      ),
+      WordEntry(
+        "where",
+        List(EnglishWordTags.Question),
+        l(W) & r(Q),
+      ),
+      WordEntry(
+        "why",
+        List(EnglishWordTags.Question),
+        l(W) & r(Q),
+      ),
+      WordEntry(
+        "when",
+        List(EnglishWordTags.Question),
+        l(W) & r(Q),
+      ),
+      WordEntry(
+        "how",
+        List(EnglishWordTags.Question),
+        l(W) & opt(r(A)) & r(Q),
+      ),
+    )
 }
 
 

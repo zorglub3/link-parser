@@ -1,6 +1,6 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 import link.english.lexicon.EnglishWordTags._
 
@@ -9,9 +9,11 @@ case class PersonalPronoun(
   accusative: String,
   possessive: String,
   person: Int, // 1 2 or 3
-  isPlural: Boolean
+  isPlural: Boolean,
+  genderOpt: Option[link.rule.WordTag],
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
   def nominativeRule = 
     if(isPlural) {
@@ -25,20 +27,23 @@ case class PersonalPronoun(
       }
     }
 
-  def linkRules: List[(String, LinkRule.NormalForm)] = 
+  def gender = genderOpt.toList
+
+  def baseTags = gender ++ List(Pronoun, Person(person)) :+ (if(isPlural) Plural else Singular)
+
+  val wordEntries =
     List(
-      nominative -> nominativeRule,
-      accusative -> (l(O) | l(R))) // TODO possessive
-
-  def words = List(nominative, accusative, possessive)
-
-  def baseTags = List(Pronoun, Person(person)) :+ (if(isPlural) Plural else Singular)
-  
-  def wordTags = List(
-    nominative -> (Nominative :: baseTags),
-    accusative -> (Accusative :: baseTags),
-    possessive -> (Possessive :: baseTags),
-  )
+      WordEntry(
+        nominative,
+        Nominative :: baseTags,
+        nominativeRule,
+      ),
+      WordEntry(
+        accusative,
+        Accusative :: baseTags,
+        l(O) | l(R),        
+      ),
+    )
 }
 
 case class DemonstrativePronoun(
@@ -47,21 +52,34 @@ case class DemonstrativePronoun(
   isFar: Boolean
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
   def nominativeSingular = r(Ss) | l(Sq("s"))
   def nominativePlural = r(Spp) | l(Sq("pp"))
   def accusative = l(O) | l(R)
 
-  def linkRules: List[(String, LinkRule.NormalForm)] =
+  val wordEntries =
     List(
-      singular -> nominativeSingular,
-      singular -> accusative,
-      plural -> nominativePlural,
-      plural -> accusative,
+      WordEntry(
+        singular,
+        List(Pronoun, Demonstrative, Singular, Nominative),
+        nominativeSingular,
+      ),
+      WordEntry(
+        singular,
+        List(Pronoun, Demonstrative, Singular, Accusative),
+        accusative,
+      ),
+      WordEntry(
+        plural,
+        List(Pronoun, Demonstrative, Plural, Nominative),
+        nominativePlural,
+      ),
+      WordEntry(
+        plural,
+        List(Pronoun, Demonstrative, Plural, Accusative),
+        accusative,
+      )
     )
-
-  def words = List(singular, plural)
-
-  def wordTags = List.empty // STUB
 }
 

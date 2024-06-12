@@ -7,8 +7,8 @@ ThisBuild / organization     := "linkparser"
 
 lazy val dependencies = Seq(
     "org.scalatest" %% "scalatest" % "3.1.2" % Test
-  , "org.typelevel" %% "cats-core" % "2.1.1"
   , "org.scala-graph" %% "graph-core" % "2.0.0"
+  , "org.scala-lang.modules" %% "scala-collection-contrib" % "0.3.0"
 )
 
 lazy val root = (project in file("."))

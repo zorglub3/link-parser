@@ -1,10 +1,10 @@
 package link.tokenizer
 
-import collection.mutable.{HashSet, HashMap, MultiMap, Builder, Set => MutableSet}
+import collection.mutable.{HashSet, Builder, MultiDict}
 import link.rule.WordTag
 
 trait TokenLexicon[W] {
-  def lookup(str: String): Option[List[W]]
+  def lookup(str: String): Option[Vector[W]]
   def tags(token: W): Seq[WordTag]
   def concat(tokens: List[String]): List[String]
   def leftWall: W
@@ -13,17 +13,17 @@ trait TokenLexicon[W] {
 
 class StringTokenLexiconBuilder {
   val tokens = HashSet[String]()
-  val tokenTags = new HashMap[String, MutableSet[WordTag]] with MultiMap[String, WordTag]
+  val tokenTags = MultiDict.empty[String, WordTag]
 
   val concatTokens =
-    new HashMap[String, MutableSet[List[String]]] with MultiMap[String, List[String]]
+    MultiDict.empty[String, List[String]]
 
   def addStringToken(t: String): Unit = {
     tokens.add(t)
   }
 
   def addConcatToken(parts: List[String]): Unit = {
-    concatTokens.addBinding(parts.head, parts.tail.toList)
+    concatTokens.addOne(parts.head -> parts.tail.toList)
   }
 
   def addToken(t: String): Unit = {
@@ -36,19 +36,19 @@ class StringTokenLexiconBuilder {
   }
 
   def addTokenTag(t: String, tag: WordTag): Unit = {
-    tokenTags.addBinding(t, tag)
+    tokenTags.addOne(t -> tag)
   }
 
   def result: TokenLexicon[String] = new TokenLexicon[String] {
     val tokenSet = tokens.clone()
-    val concatTokensMap = concatTokens.clone()
-    val tags = tokenTags.clone()
+    val concatTokensMap = concatTokens.collect { x => x }
+    val tags = tokenTags.collect { x => x }
 
-    def lookup(t: String): Option[List[String]] =
-      if(tokenSet.contains(t)) { Some(List(t)) } else { None }
+    def lookup(t: String): Option[Vector[String]] =
+      if(tokenSet.contains(t)) { Some(Vector(t)) } else { None }
 
     def tags(token: String): List[WordTag] = 
-      tags.get(token).map(_.toList).getOrElse(List.empty)
+      tags.get(token).toList
     
     def concat(tokens: List[String]): List[String] = {
       def matchList(head: String, pattern: List[String], tail: List[String]): Option[(String, List[String])] = {
@@ -77,7 +77,7 @@ class StringTokenLexiconBuilder {
         rest match {
           case Nil => acc.result().reverse
           case h :: t => {
-            val tails = concatTokensMap.getOrElse(h, Set.empty).toList.sortBy(_.length).reverse
+            val tails = concatTokensMap.get(h).toList.sortBy(_.length)
 
             findFirst(tails, matchList(h, _, t)) match {
               case Some((token, rest2)) => iterate(acc += token, rest2)

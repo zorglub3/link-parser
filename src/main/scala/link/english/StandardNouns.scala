@@ -13,6 +13,7 @@ trait StandardNouns { self: EnglishLexiconBuilder =>
     Noun("plate", "plates"),
     Noun("man", "men"),
     Noun("woman", "women"),
-    Noun("telescope", "telescopes")
+    Noun("telescope", "telescopes"),
+    Noun("drink", "drinks"),
   ))
 }

@@ -1,16 +1,18 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 
 case class Preposition(word: String) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
-  def linkRules: List[(String, LinkRule.NormalForm)] = List(word -> (l(P) & r(R)))
-
-  def words = List(word)
-
-  def wordTags = List(
-    word -> List(EnglishWordTags.Preposition)
-  )
+  val wordEntries =
+    List(
+      WordEntry(
+        word,
+        List(EnglishWordTags.Preposition),
+        (l(P) & r(R)),
+      ),
+    )
 }

@@ -1,6 +1,6 @@
 package link.english.lexicon
 
-import link.rule.{LinkRule, LinkRuleSyntax}
+import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 import link.english.lexicon.EnglishWordTags._
 
@@ -13,24 +13,41 @@ case class IntransitiveVerb(
   pastParticiple: String
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
+  import EnglishLexiconEntry.WordEntry
 
   val activeVerb = opt(l(A)) & opt(r(A)) & opt(r(P))
 
-  def linkRules: List[(String, LinkRule.NormalForm)] = 
+  val wordEntries =
     List(
-      root -> ((opt(l(Hr)) & l(W) & activeVerb) | (l(Hs) & l(Ss) & activeVerb) | (l(Hp) & l(Sp) & activeVerb) | (l(Sp) & l(Hp) & activeVerb) | (l(Ss) & l(Hs) & activeVerb)),
-      presentSingular -> (opt(l(A)) & l(Ss) & activeVerb),
-      presentPlural -> (opt(l(A)) & l(Sp) & activeVerb),
-      past -> (opt(l(A)) & l(S) & activeVerb),
-      presentParticiple -> l(Tr),
-      pastParticiple -> l(Ta))
-
-  def words = List(root, presentSingular, presentPlural, presentParticiple, past, pastParticiple)
-
-  def wordTags = List(
-    root -> List(Intransitive, Verb, Root),
-    presentSingular -> List(Intransitive, Verb, Present, Singular),
-    presentPlural -> List(Intransitive, Verb, Present, Plural),
-    past -> List(Intransitive, Verb, Past),
-  )
+      WordEntry(
+        root,
+        List(Intransitive, Verb, Root, VerbRoot(root)),
+        ((opt(l(Hr)) & l(W) & activeVerb) | (l(Hs) & l(Ss) & activeVerb) | (l(Hp) & l(Sp) & activeVerb) | (l(Sp) & l(Hp) & activeVerb) | (l(Ss) & l(Hs) & activeVerb)),
+      ),
+      WordEntry(
+        presentSingular,
+        List(Intransitive, Verb, Present, Singular, VerbRoot(root)),
+        (opt(l(A)) & l(Ss) & activeVerb),
+      ),
+      WordEntry(
+        presentPlural,
+        List(Intransitive, Verb, Present, Plural, VerbRoot(root)),
+        (opt(l(A)) & l(Sp) & activeVerb),
+      ),
+      WordEntry(
+        past,
+        List(Intransitive, Verb, Past, VerbRoot(root)),
+        (opt(l(A)) & l(S) & activeVerb),
+      ),
+      WordEntry(
+        presentParticiple,
+        List(Intransitive, Verb, PresentParticiple, VerbRoot(root)),
+        l(Tr),
+      ),
+      WordEntry(
+        pastParticiple,
+        List(Intransitive, Verb, PastParticiple, VerbRoot(root)),
+        l(Ta), 
+      )
+    )
 }
