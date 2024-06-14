@@ -1,5 +1,12 @@
 package link.language
 
+// TODO: find out how to get rid of this ugly form:
+// for {
+//   p <- someFunction(...)
+//   (a, b) = p  
+// }
+// Writing it nicely in one line gives a compilation error.
+
 sealed abstract class SimpleSentence[N, W](val vp: VerbPhrase[N, W]) { Self =>
   val subject: Option[N]
 
@@ -27,19 +34,6 @@ object SimpleSentence {
         p3 <- vp.mapNP(context2)
         (vp3, context3) = p3
       } yield (Statement(np2, vp3), context3)
-    }
-  }
-
-  // TODO predicate
-  final case class LinkStatement[N, W](np: N, link: W) 
-  extends SimpleSentence[N, W](VerbPhrase.LinkVerbPhrase[N, W](link)) {
-    val subject = Some(np)
-    def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (SimpleSentence[M, W], ContextMapper[N, M])] = {
-      for {
-        p2 <- context.mapNP(np)
-        (np2, context2) = p2
-        // TODO predicate
-      } yield (LinkStatement(np2, link), context2)
     }
   }
 }

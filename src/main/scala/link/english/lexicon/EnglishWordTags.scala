@@ -47,6 +47,7 @@ object EnglishWordTags {
   case class VerbRoot(root: String) extends WordTag("verbroot")
 
   // adjective
+  case class AdjectiveRoot(root: String) extends WordTag("adjectiveroot")
   case object Absolute extends WordTag("absolute")
   case object Comparative extends WordTag("comparative")
   case object Superlative extends WordTag("superlative")

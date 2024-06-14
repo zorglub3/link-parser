@@ -16,13 +16,13 @@ case class Adjective(
     List(
       WordEntry( 
         absolute, 
-        List(EnglishWordTags.Adjective, EnglishWordTags.Absolute),
-        (l(B) | r(J))
+        List(EnglishWordTags.Adjective, EnglishWordTags.Absolute, EnglishWordTags.AdjectiveRoot(absolute)),
+        (l(B) | (opt(l(J)) & r(J)))
       ),
       WordEntry(
         superlative,
-        List(EnglishWordTags.Adjective, EnglishWordTags.Superlative),
-        (l(B) | r(J))
+        List(EnglishWordTags.Adjective, EnglishWordTags.Superlative, EnglishWordTags.AdjectiveRoot(absolute)),
+        (l(B) | (opt(l(J)) & r(J)))
       ),
       // TODO comparative form
     )

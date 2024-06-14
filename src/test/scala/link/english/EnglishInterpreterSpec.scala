@@ -23,13 +23,14 @@ class EnglishInterpreterSpec extends AnyFlatSpec with Matchers {
       "pick up the table",
       "run over the road",
       // "quickly walk to the house",
+      "look small",
     )
 
   val statementSentences =
     List(
       "the man walked to the house",
       "the men drink the drink",
-      "look small",
+      "you look small",
     )
 
   for(s <- imperativeSentences) {
