@@ -7,6 +7,7 @@ object EnglishWordTags {
   case object Noun extends WordTag("noun")
   case object Verb extends WordTag("verb")
   case object Adjective extends WordTag("adjective")
+  case object Adverb extends WordTag("adverb")
   case object Preposition extends WordTag("preposition")
   case object Pronoun extends WordTag("pronoun")
   case object Determiner extends WordTag("determiner")

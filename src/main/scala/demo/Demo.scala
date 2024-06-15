@@ -7,7 +7,7 @@ import link.english.interpreter.EnglishInterpreter
 
 class Demo {
   val builder = 
-    new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives with StandardPrepositions
+    new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives with StandardPrepositions with StandardAdverbs
 
   val tokenLexicon = builder.tokenLexicon
   val tokenizer = new Tokenizer[String](tokenLexicon, " ")

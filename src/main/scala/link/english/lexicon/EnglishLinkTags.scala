@@ -33,7 +33,7 @@ object EnglishLinkTags {
   case object Q extends LinkTag("Q")
   // J adjective-noun binding
   case object J extends LinkTag("J")
-  // P noun-preposition binding or link-verb-preposition binding
+  // P noun-preposition binding or (link-)verb-preposition binding
   case object P extends LinkTag("P")
   // R Preposition-noun eg "from the hills"
   case object R extends LinkTag("R")

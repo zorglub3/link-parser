@@ -87,25 +87,25 @@ class EnglishInterpreter(result: ParseResult[String]) {
     } yield Predicate.SimplePredicate[NounPhrase[String], String](root, superlative) :: rest) .getOrElse(List.empty)
   }
 
-  def nounPrepositions(w: Int): List[NounPredicate[NounPhrase[String], String]] = {
+  def prepositions(w: Int): List[Predicate.PositionPredicate[NounPhrase[String], String]] = {
     (for {
       idx <- graphEdgeFrom(EnglishLinkTags.P)(w)
       pp  <- preposition(idx)
-      rest = nounPrepositions(idx)
+      rest = prepositions(idx)
     } yield pp :: rest) .getOrElse(List.empty)  
   }
 
   def nounPredicates(w: Int): List[NounPredicate[NounPhrase[String], String]] = {
-    nounAdjectives(w) ++ nounPrepositions(w)
+    nounAdjectives(w) ++ prepositions(w)
   }
 
   def interpretNP(w: Int): Option[NounPhrase[String]] = {
     if(tokenHasTag(w, EnglishWordTags.Noun)) {
       for {
         root <- getNounRoot(w)
+        det  <- graphEdgeFrom(EnglishLinkTags.D)(w)
         preds = nounPredicates(w)
-        // TODO article
-      } yield NounPhrase.Thing(isPlural(w), root, preds)
+      } yield NounPhrase.Thing(words(det), isPlural(w), root, preds)
     } else if(tokenHasTag(w, EnglishWordTags.Pronoun)) {
       for {
         person <- pronounPerson(w)
@@ -133,21 +133,37 @@ class EnglishInterpreter(result: ParseResult[String]) {
     }
   }
   
+  def adverbs(w: Int): List[Predicate.Adverbial[NounPhrase[String], String]] = {
+    def getAdverb(p: Int): Option[Predicate.Adverbial[NounPhrase[String], String]] = {
+      for {
+        _ <- guard(tokenHasTag(p, EnglishWordTags.Adverb))
+      } yield Predicate.Adverbial[NounPhrase[String], String](words(p))
+    }
+    val edges = allEdgesFrom(EnglishLinkTags.A)(w)
+    edges.flatMap(getAdverb _)
+  }
+
+  def verbPredicates(w: Int): List[VerbPredicate[NounPhrase[String], String]] = {
+    adverbs(w) ++ prepositions(w)    
+  }
+
   // TODO adverbials and prepositions
   def interpretVP(w: Int): Option[VerbPhrase[NounPhrase[String], String]] = {
     if(tokenHasTag(w, EnglishWordTags.Verb)) {
       if(tokenHasTag(w, EnglishWordTags.Intransitive)) {
         for {
           root <- getVerbRoot(w)
+          preds = verbPredicates(w)
           tense = verbTense(w)
-        } yield VerbPhrase.IntransitiveVerbPhrase(root, tense, List.empty)
+        } yield VerbPhrase.IntransitiveVerbPhrase(root, tense, preds)
       } else if(tokenHasTag(w, EnglishWordTags.Transitive)) {
         for {
           root <- getVerbRoot(w)
           tense = verbTense(w)
+          preds = verbPredicates(w)
           np   <- graphEdgeFrom(EnglishLinkTags.O)(w)
           obj  <- interpretNP(np)
-        } yield VerbPhrase.TransitiveVerbPhrase(root, tense, obj, List.empty)
+        } yield VerbPhrase.TransitiveVerbPhrase(root, tense, obj, preds)
       } else {
         None
       }

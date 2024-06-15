@@ -68,9 +68,20 @@ case class ParseResult[W](
       case x :~ p +: t if tag.matches(t) && p == position => x
     }
 
+  def allEdgesFrom(tag: LinkTag)(position: Int): List[Int] = 
+    graph.edges.map(_.outer).collect {
+      case p :~ y +: t if tag.matches(t) && p == position => y
+      case x :~ p +: t if tag.matches(t) && p == position => x
+    } .toList
+
   def graphEdgeLeft(tag: LinkTag)(position: Int): Option[Int] =
     graph.edges.map(_.outer).collectFirst {
       case x :~ p +: t if tag.matches(t) && p == position && x < p => x
+    }
+
+  def graphEdgeRight(tag: LinkTag)(position: Int): Option[Int] =
+    graph.edges.map(_.outer).collectFirst {
+      case p :~ x +: t if tag.matches(t) && p == position && x > p => x
     }
 }
 

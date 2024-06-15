@@ -9,7 +9,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class EnglishInterpreterSpec extends AnyFlatSpec with Matchers {
-  def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives
+  def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives with StandardAdverbs
   def tokenLexicon = b.tokenLexicon
   def tokenizer = new Tokenizer[String](tokenLexicon, " ")
   def parser = new LinkParser[String](b.ruleMap)

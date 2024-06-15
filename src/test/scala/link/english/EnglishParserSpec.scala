@@ -7,7 +7,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class EnglishParserSpec extends AnyFlatSpec with Matchers {
-  def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives
+  def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives with StandardAdverbs
   def tokenLexicon = b.tokenLexicon
   def tokenizer = new Tokenizer[String](tokenLexicon, " ")
   def parser = new LinkParser[String](b.ruleMap)
@@ -22,8 +22,10 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     "he ran" -> 1,
     "it is a table" -> 1,
     "she is walking" -> 1,
-    // "you pick up the table" -> 2, // ERROR: check/link-parse mismatch
+    "you pick up the table" -> 2,
     "i pick up the table" -> 1,
+    "tomorrow i pick up the table" -> 1,
+    "i pick up the table tomorrow" -> 1,
     "she picked up the table" -> 1,
     "we are picking up the table" -> 1,
     "i am drinking" -> 1,
