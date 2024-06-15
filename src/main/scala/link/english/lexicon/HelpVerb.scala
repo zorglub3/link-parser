@@ -25,17 +25,17 @@ case class HelpVerb(
       WordEntry(
         presentSingular,
         List(EnglishWordTags.HelpVerb, Verb, Present, Singular, VerbRoot(root)),
-        opt(r(N)) & r(Hs),
+        opt(l(Q)) & opt(r(N)) & r(Hs),
       ),
       WordEntry(
         presentPlural,
         List(EnglishWordTags.HelpVerb, Verb, Present, Plural, VerbRoot(root)),
-        opt(r(N)) & r(Hp),
+        opt(l(Q)) & opt(r(N)) & r(Hp),
       ),
       WordEntry(
         past,
         List(EnglishWordTags.HelpVerb, Verb, Past, VerbRoot(root)),
-        opt(r(N)) & r(Hp),
+        opt(l(Q)) & opt(r(N)) & r(H),
       )
     )
 }

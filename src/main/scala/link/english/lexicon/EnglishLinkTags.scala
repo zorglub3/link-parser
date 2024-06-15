@@ -19,6 +19,7 @@ object EnglishLinkTags {
   // A: verb-adverb binding
   case object A extends LinkTag("A")
   // H: helpverb-verb binding (suffix has same meaning as for S- tags)
+  case object H extends LinkTag("H")
   case object Hs extends LinkTag("Hs")
   case object Hp extends LinkTag("Hp")
   case object Hr extends LinkTag("Hr")
