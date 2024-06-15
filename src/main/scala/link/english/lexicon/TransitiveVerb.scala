@@ -23,8 +23,8 @@ case class TransitiveVerb(
         root,
         List(Verb, Root, Transitive),
         ((opt(l(Hr)) & l(W) & activeVerbWithObject) | 
-         (l(Ss) & l(Hs) & activeVerbWithObject) | 
-         (l(Sp) & l(Hp) & activeVerbWithObject) | 
+         (opt(l(N)) & l(Ss) & l(Hs) & activeVerbWithObject) | 
+         (opt(l(N)) & l(Sp) & l(Hp) & activeVerbWithObject) | 
          (l(Hp) & l(Sp) & activeVerbWithObject) | 
          (l(Hs) & l(Ss) & activeVerbWithObject)), // TODO - opt(l("Hr")) & l("W") ...
       ),

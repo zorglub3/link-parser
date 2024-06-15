@@ -22,7 +22,9 @@ case class IntransitiveVerb(
       WordEntry(
         root,
         List(Intransitive, Verb, Root, VerbRoot(root)),
-        ((opt(l(Hr)) & l(W) & activeVerb) | (l(Hs) & l(Ss) & activeVerb) | (l(Hp) & l(Sp) & activeVerb) | (l(Sp) & l(Hp) & activeVerb) | (l(Ss) & l(Hs) & activeVerb)),
+        ((opt(l(Hr)) & l(W) & activeVerb) | 
+         (l(Hs) & l(Ss) & activeVerb) | (l(Hp) & l(Sp) & activeVerb) | 
+         (opt(l(N)) & l(Sp) & l(Hp) & activeVerb) | (opt(l(N)) & l(Ss) & l(Hs) & activeVerb)),
       ),
       WordEntry(
         presentSingular,

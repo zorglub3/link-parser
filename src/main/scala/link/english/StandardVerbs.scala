@@ -24,6 +24,10 @@ trait StandardVerbs { self: EnglishLexiconBuilder =>
     LinkVerb("look", "looks", "look", "looking", "looked", "looked"),
     LinkVerb("smell", "smells", "smell", "smelling", "smelled", "smelled"),
 
+    HelpVerb("do", "does", "do", "doing", "did", "done"),
+    HelpVerb("will", "will", "will", "willing", "would", "willed"),
+    HelpVerb("can", "can", "can", "can", "could", "could"),
+
     ToBe()
   ))
 }

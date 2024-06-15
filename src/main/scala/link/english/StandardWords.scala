@@ -6,6 +6,8 @@ trait StandardWords { self: EnglishLexiconBuilder =>
   addEntries(List(
     Wall,
 
+    Negation(),
+    
     PersonalPronoun("i", "me", "mine", 1, false, None),
     PersonalPronoun("you", "you", "your", 2, false, None),
     PersonalPronoun("he", "him", "his", 3, false, Some(EnglishWordTags.MaleGender)),

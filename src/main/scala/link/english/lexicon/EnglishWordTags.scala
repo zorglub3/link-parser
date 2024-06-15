@@ -14,6 +14,7 @@ object EnglishWordTags {
   case object Question extends WordTag("question")
   case object Wall extends WordTag("wall")
   case object ProperNoun extends WordTag("propernoun")
+  case object Negation extends WordTag("negation")
 
   // pronoun specific
   case class Person(person: Int) extends WordTag("pronounperson")
@@ -26,6 +27,7 @@ object EnglishWordTags {
   case object Transitive extends WordTag("transitive")
   case object Intransitive extends WordTag("intransitive")
   case object LinkVerb extends WordTag("linkverb")
+  case object HelpVerb extends WordTag("helpverb")
 
   // case
   case object Nominative extends WordTag("nominative")
