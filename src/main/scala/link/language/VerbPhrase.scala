@@ -10,6 +10,10 @@ sealed abstract class VerbPhrase[N, W](val verb: W, tense: VerbPhrase.Tense) {
 }
 
 sealed trait BaseVerbPhrase[N, W] { self: VerbPhrase[N, W] =>
+  // def adverbs: List[Predicate.Adverbial[N, W]]
+  // def prepositions: List[Predicate.PositionPredicate[N, W]]
+
+  // def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (VerbPhrase[M, W], ContextMapper[N, M])] = ???
 }
 
 object VerbPhrase {
@@ -35,11 +39,11 @@ object VerbPhrase {
     def prepositions = predicates.collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
   }
 
-  final case class HelpVerbPhrase[N, W](v: W, t: Tense, vp: BaseVerbPhrase[N, W], predicates: List[VerbPredicate[N, W]]) 
+  final case class HelpVerbPhrase[N, W](v: W, t: Tense, vp: VerbPhrase[N, W] with BaseVerbPhrase[N, W]) 
   extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
     val obj = None
-    def adverbs = predicates.collect { case x: Predicate.Adverbial[N, W] => x } .toList
-    def prepositions = predicates.collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
+    def adverbs = vp.adverbs
+    def prepositions = vp.prepositions
   }
 
   sealed trait Tense

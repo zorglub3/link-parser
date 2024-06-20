@@ -36,4 +36,16 @@ object SimpleSentence {
       } yield (Statement(np2, vp3), context3)
     }
   }
+
+  final case class Question[N, W](mode: QuestionMode, np: N, _vp: VerbPhrase[N, W]) extends SimpleSentence[N, W](_vp) {
+    val subject = Some(np)
+    def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (SimpleSentence[M, W], ContextMapper[N, M])] = {
+      for {
+        p2 <- context.mapNP(np)
+        (np2, context2) = p2
+        p3 <- vp.mapNP(context2)
+        (vp3, context3) = p3
+      } yield (Question(mode, np2, vp3), context3)
+    }
+  }
 }

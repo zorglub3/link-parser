@@ -3,6 +3,8 @@ package link.english.lexicon
 import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
 
+// TODO improve adverb and preposition handling (prepositions don't work here)
+
 case class LinkVerb(
   root: String,
   presentSingular: String,

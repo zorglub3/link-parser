@@ -41,6 +41,7 @@ case class IntransitiveVerb(
         List(Intransitive, Verb, Past, VerbRoot(root)),
         (opt(l(A)) & l(S) & activeVerb),
       ),
+      // TODO present participle can also be used as adjectives
       WordEntry(
         presentParticiple,
         List(Intransitive, Verb, PresentParticiple, VerbRoot(root)),

@@ -2,6 +2,7 @@ package link.english.lexicon
 
 import link.rule.LinkRuleSyntax
 import link.english.lexicon.EnglishLinkTags._
+import link.english.lexicon.EnglishWordTags._
 
 case class ToBe() extends EnglishLexiconEntry {
   import LinkRuleSyntax._
@@ -14,33 +15,33 @@ case class ToBe() extends EnglishLexiconEntry {
     List(
       WordEntry(
         "am",
-        List(),
-        ((l(Spi) & opt(r(N)) & toBeObj)  | (r(Sq("pi")) & opt(r(N)) & toBeObj)),
+        List(Verb, HelpVerb, VerbRoot("is"), Present),
+        ((l(Spi) & opt(r(N)) & toBeObj)  | (opt(l(Q)) & r(Sq("pi")) & opt(r(N)) & toBeObj)),
       ),
       WordEntry(
         "are",
-        List(),
-        ((l(Spp) & opt(r(N)) & toBeObj)  | (r(Sq("pp")) & opt(r(N)) & toBeObj)),
+        List(Verb, HelpVerb, VerbRoot("is"), Present),
+        ((l(Spp) & opt(r(N)) & toBeObj)  | (opt(l(Q)) & r(Sq("pp")) & opt(r(N)) & toBeObj)),
       ),
       WordEntry(
         "is",
-        List(),
-        ((l(Ss) & opt(r(N)) & toBeObj)    | (r(Sq("s"))  & opt(r(N)) & toBeObj)),
+        List(Verb, HelpVerb, VerbRoot("is"), Present),
+        ((l(Ss) & opt(r(N)) & toBeObj)    | (opt(l(Q)) & r(Sq("s"))  & opt(r(N)) & toBeObj)),
       ),
       WordEntry(
         "was",
-        List(),
-        ((l(Spi) & opt(r(N)) & toBeObj)  | (r(Sq("pi")) & opt(r(N)) & toBeObj)),
+        List(Verb, HelpVerb, VerbRoot("is"), Past),
+        ((l(Spi) & opt(r(N)) & toBeObj)  | (opt(l(Q)) & r(Sq("pi")) & opt(r(N)) & toBeObj)),
       ),
       WordEntry(
         "was",
-        List(),
-        ((l(Ss) & opt(r(N)) & toBeObj)   | (r(Sq("s"))  & opt(r(N)) & toBeObj)),
+        List(Verb, HelpVerb, VerbRoot("is"), Past),
+        ((l(Ss) & opt(r(N)) & toBeObj)   | (opt(l(Q)) & r(Sq("s"))  & opt(r(N)) & toBeObj)),
       ),
       WordEntry(
         "were",
-        List(),
-        ((l(Spp) & opt(r(N)) & toBeObj) | (r(Sq("pp")) & opt(r(N)) & toBeObj)),
+        List(Verb, HelpVerb, VerbRoot("is"), Past),
+        ((l(Spp) & opt(r(N)) & toBeObj) | (opt(l(Q)) & r(Sq("pp")) & opt(r(N)) & toBeObj)),
       ),
     )
 }

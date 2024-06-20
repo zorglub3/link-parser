@@ -43,6 +43,7 @@ case class TransitiveVerb(
         List(Verb, VerbRoot(root), Past, Transitive),
         (opt(l(A)) & l(S) & activeVerbWithObject),
       ),
+      // TODO - present participle can also be used as adjectives
       WordEntry(
         presentParticiple,
         List(Verb, VerbRoot(root), PresentParticiple, Transitive),

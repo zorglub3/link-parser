@@ -4,6 +4,7 @@ import link.english.lexicon.Noun
 
 trait StandardNouns { self: EnglishLexiconBuilder =>
   addEntries(List(
+    Noun("beer", "beers"),
     Noun("table", "tables"),
     Noun("chair", "chairs"),
     Noun("house", "houses"),

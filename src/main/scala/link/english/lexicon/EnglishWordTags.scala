@@ -28,6 +28,7 @@ object EnglishWordTags {
   case object Intransitive extends WordTag("intransitive")
   case object LinkVerb extends WordTag("linkverb")
   case object HelpVerb extends WordTag("helpverb")
+  case object ToBe extends WordTag("tobe")
 
   // case
   case object Nominative extends WordTag("nominative")

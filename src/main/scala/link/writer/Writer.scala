@@ -15,6 +15,7 @@ trait Writer[N, W] {
         writeNP(np)
         writeVP(Some(form), vp)
       }
+      case SimpleSentence.Question(_, _, _) => ???
     }
   }
 
@@ -37,7 +38,7 @@ trait Writer[N, W] {
         // TODO write predicate
         // TODO write prepositions
       }
-      case VerbPhrase.HelpVerbPhrase(v, t, vp, ps) => {
+      case VerbPhrase.HelpVerbPhrase(v, t, vp) => {
         ???
       }
     }    
