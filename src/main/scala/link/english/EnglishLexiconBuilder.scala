@@ -22,6 +22,10 @@ class EnglishLexiconBuilder {
     builder.result
   }
 
+  def wordBook: WordBook = {
+    new WordBook(entries.result())    
+  }
+
   def linkRules: Map[String, LinkRule.NormalForm] = {
     val linkRuleSet = new LinkRuleSet[String] {}
 

@@ -1,3 +1,5 @@
 package link.tokenizer
 
-case class UnrecognizedTokens(tokens: List[String])
+import link.LinkError
+
+case class UnrecognizedTokens(tokens: List[String]) extends LinkError(s"Unrecognized tokens: $tokens")

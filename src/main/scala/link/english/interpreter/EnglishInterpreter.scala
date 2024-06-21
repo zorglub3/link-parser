@@ -253,3 +253,10 @@ class EnglishInterpreter(result: ParseResult[String]) {
     interpretImperative() orElse interpretStatement() orElse interpretQuestion()
   }
 }
+
+object EnglishInterpreter {
+  def apply(r: ParseResult[String]): Option[SimpleSentence[NounPhrase[String], String]] = {
+    val int = new EnglishInterpreter(r)
+    int.interpretS()
+  }
+}

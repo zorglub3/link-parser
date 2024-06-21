@@ -12,7 +12,7 @@ trait Writer[N, W] {
       }
       case SimpleSentence.Statement(np, vp) => {
         val form = npForm(np)
-        writeNP(np)
+        writeNP(np, Casus.Nominative)
         writeVP(Some(form), vp)
       }
       case SimpleSentence.Question(_, _, _) => ???
@@ -29,7 +29,7 @@ trait Writer[N, W] {
       case VerbPhrase.TransitiveVerbPhrase(w, t, o, ps) => {
         // TODO write adverbs
         writeVerb(verbForm, w, t)
-        writeNP(o)
+        writeNP(o, Casus.Accusative)
         // TODO write prepositions
       }
       case VerbPhrase.LinkVerbPhrase(w, t, p, ps) => {
@@ -45,7 +45,7 @@ trait Writer[N, W] {
   }
 
   def npForm(np: N): VerbForm
-  def writeNP(np: N): Unit
+  def writeNP(np: N, c: Casus): Unit
   def writeWord(w: W): Unit
   def writeVerb(verbForm: Option[VerbForm], w: W, tense: VerbPhrase.Tense): Unit
 }
