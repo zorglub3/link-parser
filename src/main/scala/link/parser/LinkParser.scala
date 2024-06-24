@@ -2,6 +2,9 @@ package link.parser
 
 import link.rule._
 
+// TODO return Either[ParseError, X] where X is either Int or List[ParseResult]
+// TODO figure out how to make linkParse function return only an error if there
+//      are no valid parses at all.
 class LinkParser[W](val ruleMap: RuleMap[W]) {
   def ruleMapEntries(sentence: Vector[W]): Vector[List[RuleMap.Entry]] =
     sentence.map(ruleMap.lookup)

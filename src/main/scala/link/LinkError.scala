@@ -1,3 +1,5 @@
 package link
 
-class LinkError(msg: String)
+class LinkError(msg: String) {
+  def getMessage(): String = msg
+}

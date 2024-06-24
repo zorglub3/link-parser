@@ -4,9 +4,7 @@ import link.parser.ParseResult
 import link.language._
 import link.english.lexicon.{EnglishWordTags, EnglishLinkTags}
 
-class EnglishInterpreter(result: ParseResult[String]) {
-  import result._
-  
+class EnglishInterpreter {
   def guard(v: => Boolean): Option[Unit] = {
     if(v) {
       Some( () )
@@ -19,7 +17,9 @@ class EnglishInterpreter(result: ParseResult[String]) {
     v.fold(Option( () ))(_ => Option.empty[Unit])  
   }
 
-  def isActiveVerb(w: Int): Boolean = {
+  def isActiveVerb(result: ParseResult[String], w: Int): Boolean = {
+    import result._
+    
     val tags = tokenTags(w)
 
     tags.exists { 
@@ -29,34 +29,48 @@ class EnglishInterpreter(result: ParseResult[String]) {
     }
   }
 
-  def getVerbRoot(w: Int): Option[String] = {
+  def getVerbRoot(result: ParseResult[String], w: Int): Option[String] = {
+    import result._
+    
     tokenTags(w).collectFirst { case EnglishWordTags.VerbRoot(root) => root }
   }
 
-  def getNounRoot(w: Int): Option[String] = {
+  def getNounRoot(result: ParseResult[String], w: Int): Option[String] = {
+    import result._
+    
     tokenTags(w).collectFirst { case EnglishWordTags.NounRoot(root) => root }
   }
 
-  def getAdjectiveRoot(w: Int): Option[String] = {
+  def getAdjectiveRoot(result: ParseResult[String], w: Int): Option[String] = {
+    import result._
+    
     tokenTags(w).collectFirst { case EnglishWordTags.AdjectiveRoot(root) => root }
   }
 
-  def isSuperlative(w: Int): Boolean = {
+  def isSuperlative(result: ParseResult[String], w: Int): Boolean = {
+    import result._
+    
     tokenHasTag(w, EnglishWordTags.Superlative)
   }
 
-  def pronounPerson(w: Int): Option[Int] = {
+  def pronounPerson(result: ParseResult[String], w: Int): Option[Int] = {
+    import result._
+    
     tokenTags(w).collectFirst {
       case EnglishWordTags.Person(x) => x
     }
   }
 
-  def isPlural(w: Int): Boolean =
+  def isPlural(result: ParseResult[String], w: Int): Boolean = {
+    import result._
     tokenHasTag(w, EnglishWordTags.Plural)
+  }
     
-  def isLinkVerb(w: Int): Boolean = ???
+  def isLinkVerb(result: ParseResult[String], w: Int): Boolean = ???
   
-  def pronounGender(w: Int): Option[NounPhrase.Gender] = {
+  def pronounGender(result: ParseResult[String], w: Int): Option[NounPhrase.Gender] = {
+    import result._
+    
     if(tokenHasTag(w, EnglishWordTags.MaleGender)) {
       Some(NounPhrase.MaleGender)
     } else if(tokenHasTag(w, EnglishWordTags.FemaleGender)) {
@@ -66,61 +80,71 @@ class EnglishInterpreter(result: ParseResult[String]) {
     }
   }
   
-  def preposition(w: Int): Option[Predicate.PositionPredicate[NounPhrase[String], String]] = {
+  def preposition(result: ParseResult[String], w: Int): Option[Predicate.PositionPredicate[NounPhrase[String], String]] = {
+    import result._
+    
     for {
       _ <- guard(tokenHasTag(w, EnglishWordTags.Preposition))
       idx <- graphEdgeFrom(EnglishLinkTags.R)(w)
-      np <- interpretNP(idx)
+      np <- interpretNP(result, idx)
     } yield Predicate.PositionPredicate(words(w), np)
   }
 
-  def nounAdjectives(w: Int): List[NounPredicate[NounPhrase[String], String]] = {
+  def nounAdjectives(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String] with NounPredicate[NounPhrase[String], String]] = {
+    import result._
+    
     (for {
       adj  <- graphEdgeLeft(EnglishLinkTags.J)(w)
       _    <- guard(tokenHasTag(adj, EnglishWordTags.Adjective))
-      root <- getAdjectiveRoot(adj)
-      superlative = isSuperlative(adj)
-      rest =  nounAdjectives(adj)
+      root <- getAdjectiveRoot(result, adj)
+      superlative = isSuperlative(result, adj)
+      rest =  nounAdjectives(result, adj)
     } yield Predicate.SimplePredicate[NounPhrase[String], String](root, superlative) :: rest) .getOrElse(List.empty)
   }
 
-  def prepositions(w: Int): List[Predicate.PositionPredicate[NounPhrase[String], String]] = {
+  def prepositions(result: ParseResult[String], w: Int): List[Predicate.PositionPredicate[NounPhrase[String], String]] = {
+    import result._
+    
     (for {
       idx <- graphEdgeFrom(EnglishLinkTags.P)(w)
-      pp  <- preposition(idx)
-      rest = prepositions(idx)
+      pp  <- preposition(result, idx)
+      rest = prepositions(result, idx)
     } yield pp :: rest) .getOrElse(List.empty)  
   }
 
-  def nounPredicates(w: Int): List[NounPredicate[NounPhrase[String], String]] = {
-    nounAdjectives(w) ++ prepositions(w)
+  def nounPredicates(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String] with NounPredicate[NounPhrase[String], String]] = {
+    nounAdjectives(result, w) ++ prepositions(result, w)
   }
 
-  def linkPredicate(v: Int): Option[NounPredicate[NounPhrase[String], String]] = {
+  def linkPredicate(result: ParseResult[String], v: Int): Option[NounPredicate[NounPhrase[String], String]] = {
+    import result._ 
+
     def adjective(): Option[NounPredicate[NounPhrase[String], String]] = {
       for {
         adj <- graphEdgeFrom(EnglishLinkTags.B)(v)
         _ <- guard(tokenHasTag(adj, EnglishWordTags.Adjective))
-        root <- getAdjectiveRoot(adj)
-        superlative = isSuperlative(adj)
+        root <- getAdjectiveRoot(result, adj)
+        superlative = isSuperlative(result, adj)
       } yield Predicate.SimplePredicate(root, superlative)
     }    
 
-    adjective() orElse (graphEdgeFrom(EnglishLinkTags.P)(v).flatMap(preposition _)) 
+    adjective() orElse (graphEdgeFrom(EnglishLinkTags.P)(v).flatMap(preposition(result, _))) 
   }
 
-  def interpretNP(w: Int): Option[NounPhrase[String]] = {
+  def interpretNP(result: ParseResult[String], w: Int): Option[NounPhrase[String]] = {
+    import result._
+    
     if(tokenHasTag(w, EnglishWordTags.Noun)) {
       for {
-        root <- getNounRoot(w)
+        root <- getNounRoot(result, w)
         det  <- graphEdgeFrom(EnglishLinkTags.D)(w)
-        preds = nounPredicates(w)
-      } yield NounPhrase.Thing(words(det), isPlural(w), root, preds)
+        preds = nounPredicates(result, w)
+      } yield NounPhrase.Thing(words(det), isPlural(result, w), root, preds)
     } else if(tokenHasTag(w, EnglishWordTags.Pronoun)) {
       for {
-        person <- pronounPerson(w)
-        plural =  isPlural(w)
-        gender =  pronounGender(w)
+        person <- pronounPerson(result, w)
+        plural =  isPlural(result, w)
+        gender =  pronounGender(result, w)
       } yield NounPhrase.Pronoun(person, plural, gender)
     } else if(tokenHasTag(w, EnglishWordTags.ProperNoun)) {
       ???
@@ -129,7 +153,9 @@ class EnglishInterpreter(result: ParseResult[String]) {
     }
   }
 
-  def verbTense(w: Int): VerbPhrase.Tense = {
+  def verbTense(result: ParseResult[String], w: Int): VerbPhrase.Tense = {
+    import result._
+    
     if(tokenHasTag(w, EnglishWordTags.Present)) {
       VerbPhrase.Present
     } else if(tokenHasTag(w, EnglishWordTags.Past)) {
@@ -143,7 +169,9 @@ class EnglishInterpreter(result: ParseResult[String]) {
     }
   }
   
-  def adverbs(w: Int): List[Predicate.Adverbial[NounPhrase[String], String]] = {
+  def adverbs(result: ParseResult[String], w: Int): List[Predicate.Adverbial[NounPhrase[String], String]] = {
+    import result._
+    
     def getAdverb(p: Int): Option[Predicate.Adverbial[NounPhrase[String], String]] = {
       for {
         _ <- guard(tokenHasTag(p, EnglishWordTags.Adverb))
@@ -153,32 +181,34 @@ class EnglishInterpreter(result: ParseResult[String]) {
     edges.flatMap(getAdverb _)
   }
 
-  def verbPredicates(w: Int): List[VerbPredicate[NounPhrase[String], String]] = {
-    adverbs(w) ++ prepositions(w)    
+  def verbPredicates(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String] with VerbPredicate[NounPhrase[String], String]] = {
+    adverbs(result, w) ++ prepositions(result, w)    
   }
 
-  def interpretBaseVP(w: Int): Option[VerbPhrase[NounPhrase[String], String] with BaseVerbPhrase[NounPhrase[String], String]] = {
+  def interpretBaseVP(result: ParseResult[String], w: Int): Option[VerbPhrase[NounPhrase[String], String] with BaseVerbPhrase[NounPhrase[String], String]] = {
+    import result._
+    
     if(tokenHasTag(w, EnglishWordTags.Verb)) {
       if(tokenHasTag(w, EnglishWordTags.Intransitive)) {
         for {
-          root <- getVerbRoot(w)
-          preds = verbPredicates(w)
-          tense = verbTense(w)
+          root <- getVerbRoot(result, w)
+          preds = verbPredicates(result, w)
+          tense = verbTense(result, w)
         } yield VerbPhrase.IntransitiveVerbPhrase(root, tense, preds)
       } else if(tokenHasTag(w, EnglishWordTags.Transitive)) {
         for {
-          root <- getVerbRoot(w)
-          tense = verbTense(w)
-          preds = verbPredicates(w)
+          root <- getVerbRoot(result, w)
+          tense = verbTense(result, w)
+          preds = verbPredicates(result, w)
           np   <- graphEdgeFrom(EnglishLinkTags.O)(w)
-          obj  <- interpretNP(np)
+          obj  <- interpretNP(result, np)
         } yield VerbPhrase.TransitiveVerbPhrase(root, tense, obj, preds)
       } else if(tokenHasTag(w, EnglishWordTags.LinkVerb)) {
         for {
-          root <- getVerbRoot(w)
-          tense = verbTense(w)
-          preds = verbPredicates(w)
-          nounPred <- linkPredicate(w)
+          root <- getVerbRoot(result, w)
+          tense = verbTense(result, w)
+          preds = verbPredicates(result, w)
+          nounPred <- linkPredicate(result, w)
         } yield VerbPhrase.LinkVerbPhrase(root, tense, nounPred, preds)
       } else {
         None
@@ -188,75 +218,78 @@ class EnglishInterpreter(result: ParseResult[String]) {
     }
   }
 
-  def interpretVP(n: Int, w: Int): Option[VerbPhrase[NounPhrase[String], String]] = {
+  def interpretVP(result: ParseResult[String], n: Int, w: Int): Option[VerbPhrase[NounPhrase[String], String]] = {
+    import result._
+    
     def withHelpVerb() = {
       for {
         h  <- graphEdgeFrom(EnglishLinkTags.H)(w)
         _ <- guard(h > n)
-        root <- getVerbRoot(h)
-        tense = verbTense(h)
-        vp <- interpretBaseVP(w)
+        root <- getVerbRoot(result, h)
+        tense = verbTense(result, h)
+        vp <- interpretBaseVP(result, w)
       } yield VerbPhrase.HelpVerbPhrase(root, tense, vp)
     }
 
     def withoutHelpVerb() = {
       for {
         _ <- guardNone(graphEdgeFrom(EnglishLinkTags.H)(w))
-        vp <- interpretBaseVP(w)
+        vp <- interpretBaseVP(result, w)
       } yield vp
     }
 
     withHelpVerb() orElse withoutHelpVerb()   
   }
 
-  def question(h: Int): QuestionMode = {
+  def question(result: ParseResult[String], h: Int): QuestionMode = {
+    import result._
+    
     (for {
       q <- graphEdgeFrom(EnglishLinkTags.Q)(h)
       m <- QuestionMode.fromString(words(q))
     } yield m) .getOrElse(QuestionMode.YesNo)
   }
 
-  def interpretQuestion(): Option[SimpleSentence[NounPhrase[String], String]] = {
+  def interpretQuestion(result: ParseResult[String]): Option[SimpleSentence[NounPhrase[String], String]] = {
+    import result._
+    
     for {
       (n, v) <- graphEdge(EnglishLinkTags.S)
-      _ <- guard(isActiveVerb(v))
-      np <- interpretNP(n)
+      _ <- guard(isActiveVerb(result, v))
+      np <- interpretNP(result, n)
       h <- graphEdgeFrom(EnglishLinkTags.H)(v)
       _ <- guard(h < n)
-      root <- getVerbRoot(h)
-      tense = verbTense(h)
-      vp <- interpretBaseVP(v)
-      q = question(h)
+      root <- getVerbRoot(result, h)
+      tense = verbTense(result, h)
+      vp <- interpretBaseVP(result, v)
+      q = question(result, h)
     } yield SimpleSentence.Question(q, np, vp) 
   }
 
-  def interpretImperative(): Option[SimpleSentence[NounPhrase[String], String]] = {
+  def interpretImperative(result: ParseResult[String]): Option[SimpleSentence[NounPhrase[String], String]] = {
+    import result._
+    
     for {
       (w, v) <- graphEdge(EnglishLinkTags.W)
       _ <- guard(tokenHasTag(w, EnglishWordTags.Wall))
       _ <- guard(tokenHasTag(v, EnglishWordTags.Root))
       _ <- guard(tokenHasTag(v, EnglishWordTags.Verb))
-      vp <- interpretVP(-1, v) 
+      vp <- interpretVP(result, -1, v) 
     } yield SimpleSentence.Imperative(vp)
   }
 
-  def interpretStatement(): Option[SimpleSentence[NounPhrase[String], String]] = {
+  def interpretStatement(result: ParseResult[String]): Option[SimpleSentence[NounPhrase[String], String]] = {
+    import result._
+    
     for {
       (n, v) <- graphEdge(EnglishLinkTags.S)
-      _ <- guard(isActiveVerb(v))
-      np <- interpretNP(n)
-      vp <- interpretVP(n, v)
+      _ <- guard(isActiveVerb(result, v))
+      np <- interpretNP(result, n)
+      vp <- interpretVP(result, n, v)
     } yield SimpleSentence.Statement(np, vp)
   }
 
-  def interpretS(): Option[SimpleSentence[NounPhrase[String], String]] = {
-    interpretImperative() orElse interpretStatement() orElse interpretQuestion()
-  }
-}
-
-object EnglishInterpreter {
-  def apply(r: ParseResult[String]): Option[SimpleSentence[NounPhrase[String], String]] = {
-    val int = new EnglishInterpreter(r)
-    int.interpretS()
+  def interpretS(result: ParseResult[String]): Option[SimpleSentence[NounPhrase[String], String]] = {
+    interpretImperative(result) orElse interpretStatement(result) orElse interpretQuestion(result)
   }
 }

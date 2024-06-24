@@ -2,6 +2,8 @@ package link.writer
 
 import link.language._
 
+// TODO use Either[WriterError, Y] as return type
+// TODO parameterize on Y - the output type
 trait Writer[N, W] {
   import Writer._
   
