@@ -40,7 +40,7 @@ object VerbPhrase {
   }
 
   final case class HelpVerbPhrase[N, W](v: W, t: Tense, vp: VerbPhrase[N, W] with BaseVerbPhrase[N, W]) 
-  extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
+  extends VerbPhrase[N, W](v, t) { // TODO - FIXME - v t are wrong here - should be from vp 
     val obj = None
     def adverbs = vp.adverbs
     def prepositions = vp.prepositions

@@ -3,6 +3,7 @@ package link.english.interpreter
 import link.parser.ParseResult
 import link.language._
 import link.english.lexicon.{EnglishWordTags, EnglishLinkTags}
+import link.interpreter.InterpretationError
 
 class EnglishInterpreter {
   def guard(v: => Boolean): Option[Unit] = {
@@ -291,5 +292,12 @@ class EnglishInterpreter {
 
   def interpretS(result: ParseResult[String]): Option[SimpleSentence[NounPhrase[String], String]] = {
     interpretImperative(result) orElse interpretStatement(result) orElse interpretQuestion(result)
+  }
+
+  def interpret(results: List[ParseResult[String]]): Either[InterpretationError, List[SimpleSentence[NounPhrase[String], String]]] = {
+    results.flatMap(interpretS _) match {
+      case Nil => Left(InterpretationError("No valid interpretations"))
+      case h :: t => Right(h :: t)
+    }
   }
 }
