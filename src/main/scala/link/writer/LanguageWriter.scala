@@ -42,16 +42,16 @@ trait LanguageWriter[N, W, WB <: WriteBuffer[W, WB]] {
     
     vp match {
       case IntransitiveVerbPhrase(w, t, ps) => {
-        val adverbs = vp.adverbs
-        val prepositions = vp.prepositions
+        val adverbs = ps.filter(_.adverbialLike)
+        val prepositions = ps.filter(_.prepositionLike)
 
         writeAdverbs(adverbs) 
           .seq(writeVerb(form, w, t)) 
           .seq(writePrepositions(prepositions))
       }
       case TransitiveVerbPhrase(w, t, o, ps) => {
-        val adverbs = vp.adverbs
-        val prepositions = vp.prepositions
+        val adverbs = ps.filter(_.adverbialLike)
+        val prepositions = ps.filter(_.prepositionLike)
 
         writeAdverbs(adverbs)
           .seq(writeVerb(form, w, t))
@@ -59,8 +59,8 @@ trait LanguageWriter[N, W, WB <: WriteBuffer[W, WB]] {
           .seq(writePrepositions(prepositions))
       }
       case LinkVerbPhrase(w, t, p, ps) => {
-        val adverbs = vp.adverbs
-        val prepositions = vp.prepositions
+        val adverbs = ps.filter(_.adverbialLike)
+        val prepositions = ps.filter(_.prepositionLike)
 
         writeAdverbs(adverbs)
           .seq(writeVerb(form, w, t))
@@ -96,7 +96,7 @@ trait LanguageWriter[N, W, WB <: WriteBuffer[W, WB]] {
     })
   }
 
-  def writePredicate(predicate: NounPredicate[N, W]): Result = {
+  def writePredicate(predicate: Predicate[N, W]): Result = {
     import Predicate._
 
     predicate match {

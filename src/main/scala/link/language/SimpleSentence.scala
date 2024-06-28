@@ -1,51 +1,51 @@
 package link.language
 
-// TODO: find out how to get rid of this ugly form:
-// for {
-//   p <- someFunction(...)
-//   (a, b) = p  
-// }
-// Writing it nicely in one line gives a compilation error.
+import ContextMapper.UnmappedObject
 
 sealed abstract class SimpleSentence[N, W](val vp: VerbPhrase[N, W]) { Self =>
   val subject: Option[N]
 
-  def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (SimpleSentence[M, W], ContextMapper[N, M])]
+  def mapNP[M, CM <: ContextMapper[N, M, CM]](
+    context: CM
+  ): Either[UnmappedObject[N], (SimpleSentence[M, W], CM)]
 }
 
 object SimpleSentence {
   final case class Imperative[N, W](_vp: VerbPhrase[N, W]) extends SimpleSentence[N, W](_vp) {
     val subject = None
 
-    def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (SimpleSentence[M, W], ContextMapper[N, M])] = {
+    def mapNP[M, CM <: ContextMapper[N, M, CM]](
+      context: CM
+    ): Either[UnmappedObject[N], (SimpleSentence[M, W], CM)] = {
       for {
-        p <- vp.mapNP(context)
-        (vp2, context2) = p
-      } yield (Imperative(vp2), context2)
+        p <- vp.mapNP[M, CM](context)
+      } yield (Imperative(p._1), p._2)
     }
   }
 
   final case class Statement[N, W](np: N, _vp: VerbPhrase[N, W]) extends SimpleSentence[N, W](_vp) {
     val subject = Some(np)
-    def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (SimpleSentence[M, W], ContextMapper[N, M])] = {
+
+    def mapNP[M, CM <: ContextMapper[N, M, CM]](
+      context: CM
+    ): Either[UnmappedObject[N], (SimpleSentence[M, W], CM)] = {
       for {
         p2 <- context.mapNP(np)
-        (np2, context2) = p2
-        p3 <- vp.mapNP(context2)
-        (vp3, context3) = p3
-      } yield (Statement(np2, vp3), context3)
+        p3 <- vp.mapNP[M, CM](p2._2)
+      } yield (Statement(p2._1, p3._1), p3._2)
     }
   }
 
   final case class Question[N, W](mode: QuestionMode, np: N, _vp: VerbPhrase[N, W]) extends SimpleSentence[N, W](_vp) {
     val subject = Some(np)
-    def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (SimpleSentence[M, W], ContextMapper[N, M])] = {
+
+    def mapNP[M, CM <: ContextMapper[N, M, CM]](
+      context: CM
+    ): Either[UnmappedObject[N], (SimpleSentence[M, W], CM)] = {
       for {
         p2 <- context.mapNP(np)
-        (np2, context2) = p2
-        p3 <- vp.mapNP(context2)
-        (vp3, context3) = p3
-      } yield (Question(mode, np2, vp3), context3)
+        p3 <- vp.mapNP[M, CM](p2._2)
+      } yield (Question(mode, p2._1, p3._1), p3._2)
     }
   }
 }

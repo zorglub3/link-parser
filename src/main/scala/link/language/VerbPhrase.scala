@@ -1,12 +1,16 @@
 package link.language
 
+import ContextMapper.UnmappedObject
+
 sealed abstract class VerbPhrase[N, W](val verb: W, tense: VerbPhrase.Tense) {
   val obj: Option[N]
 
-  def adverbs: List[Predicate.Adverbial[N, W]]
-  def prepositions: List[Predicate.PositionPredicate[N, W]]
+  // def adverbs: List[Predicate.Adverbial[N, W]]
+  // def prepositions: List[Predicate.PositionPredicate[N, W]]
 
-  def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (VerbPhrase[M, W], ContextMapper[N, M])] = ???
+  def mapNP[M, CM <: ContextMapper[N, M, CM]](
+    context: CM
+  ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = ??? // TODO
 }
 
 sealed trait BaseVerbPhrase[N, W] { self: VerbPhrase[N, W] =>
@@ -17,22 +21,30 @@ sealed trait BaseVerbPhrase[N, W] { self: VerbPhrase[N, W] =>
 }
 
 object VerbPhrase {
-  final case class IntransitiveVerbPhrase[N, W](v: W, t: Tense, predicates: List[Predicate[N, W] with VerbPredicate[N, W]]) 
-  extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
+  final case class IntransitiveVerbPhrase[N, W](
+    v: W, t: Tense, 
+    predicates: List[Predicate[N, W]]
+  ) extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
     val obj = None
 
-    def adverbs = predicates.collect { case x: Predicate.Adverbial[N, W] => x } .toList
-    def prepositions = predicates.collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
+    def adverbs = 
+      predicates
+        .collect { case x: Predicate.Adverbial[N, W] => x } 
+        .toList
+
+    def prepositions = 
+      predicates
+        .collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
   }
 
-  final case class TransitiveVerbPhrase[N, W](v: W, t: Tense, o: N, predicates: List[Predicate[N, W] with VerbPredicate[N, W]]) 
+  final case class TransitiveVerbPhrase[N, W](v: W, t: Tense, o: N, predicates: List[Predicate[N, W]]) 
   extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
     val obj = Some(o)
     def adverbs = predicates.collect { case x: Predicate.Adverbial[N, W] => x } .toList
     def prepositions = predicates.collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
   }
 
-  final case class LinkVerbPhrase[N, W](v: W, t: Tense, p: NounPredicate[N, W], predicates: List[Predicate[N, W] with VerbPredicate[N, W]]) 
+  final case class LinkVerbPhrase[N, W](v: W, t: Tense, p: Predicate[N, W], predicates: List[Predicate[N, W]]) 
   extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
     val obj = None
     def adverbs = predicates.collect { case x: Predicate.Adverbial[N, W] => x } .toList
@@ -42,8 +54,8 @@ object VerbPhrase {
   final case class HelpVerbPhrase[N, W](v: W, t: Tense, vp: VerbPhrase[N, W] with BaseVerbPhrase[N, W]) 
   extends VerbPhrase[N, W](v, t) { // TODO - FIXME - v t are wrong here - should be from vp 
     val obj = None
-    def adverbs = vp.adverbs
-    def prepositions = vp.prepositions
+    // def adverbs = vp.adverbs
+    // def prepositions = vp.prepositions
   }
 
   sealed trait Tense

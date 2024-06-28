@@ -43,9 +43,9 @@ class EnglishInterpreterSpec extends AnyFlatSpec with Matchers {
           xs.length should be >= 1
           
           xs.foreach { result =>
-            val interpreter = new EnglishInterpreter(result)
+            val interpreter = new EnglishInterpreter
 
-            interpreter.interpretS() match {
+            interpreter.interpretS(result) match {
               case Some(SimpleSentence.Imperative(_)) => {}
               case Some(x) => fail(s"Should be imperative sentence, got $x")
               case None => fail(s"Failed to interpret parsed sentence")
@@ -67,9 +67,9 @@ class EnglishInterpreterSpec extends AnyFlatSpec with Matchers {
           xs.length should be >= 1
           
           xs.foreach { result =>
-            val interpreter = new EnglishInterpreter(result)
+            val interpreter = new EnglishInterpreter
 
-            interpreter.interpretS() match {
+            interpreter.interpretS(result) match {
               case Some(SimpleSentence.Statement(_, _)) => {}
               case Some(x) => fail(s"Should be statement sentence, got $x")
               case None => fail(s"Failed to interpret parsed sentence")

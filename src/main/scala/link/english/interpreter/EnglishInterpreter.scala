@@ -91,7 +91,7 @@ class EnglishInterpreter {
     } yield Predicate.PositionPredicate(words(w), np)
   }
 
-  def nounAdjectives(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String] with NounPredicate[NounPhrase[String], String]] = {
+  def nounAdjectives(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String]] = {
     import result._
     
     (for {
@@ -113,14 +113,14 @@ class EnglishInterpreter {
     } yield pp :: rest) .getOrElse(List.empty)  
   }
 
-  def nounPredicates(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String] with NounPredicate[NounPhrase[String], String]] = {
+  def nounPredicates(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String]] = {
     nounAdjectives(result, w) ++ prepositions(result, w)
   }
 
-  def linkPredicate(result: ParseResult[String], v: Int): Option[NounPredicate[NounPhrase[String], String]] = {
+  def linkPredicate(result: ParseResult[String], v: Int): Option[Predicate[NounPhrase[String], String]] = {
     import result._ 
 
-    def adjective(): Option[NounPredicate[NounPhrase[String], String]] = {
+    def adjective(): Option[Predicate[NounPhrase[String], String]] = {
       for {
         adj <- graphEdgeFrom(EnglishLinkTags.B)(v)
         _ <- guard(tokenHasTag(adj, EnglishWordTags.Adjective))
@@ -182,7 +182,7 @@ class EnglishInterpreter {
     edges.flatMap(getAdverb _)
   }
 
-  def verbPredicates(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String] with VerbPredicate[NounPhrase[String], String]] = {
+  def verbPredicates(result: ParseResult[String], w: Int): List[Predicate[NounPhrase[String], String]] = {
     adverbs(result, w) ++ prepositions(result, w)    
   }
 
