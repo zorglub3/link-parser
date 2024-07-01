@@ -23,15 +23,23 @@ class Demo {
   val interpreter = new EnglishInterpreter
   // val writer = new EnglishWriter(wordBook)
 
+  implicit class LinkErrorSyntax[E <: link.LinkError, T](v: Either[E, T]) {
+    def coerce: Either[link.LinkError, T] = v
+  }
+
   def parseLinks(str: String) = {
-    tokenizer(str.toLowerCase).map { tokens => parser.links(tokens) }
+    for {
+      tokens <- tokenizer(str.toLowerCase).coerce
+      results <- parser.links(tokens).coerce
+    } yield results
   }
 
   def interpret(str: String) = {
-    tokenizer(str.toLowerCase).map { tokens =>
-      val results = parser.links(tokens)
-      results.map(interpreter.interpretS _)
-    }
+    for {
+      tokens <- tokenizer(str.toLowerCase).coerce
+      results <- parser.links(tokens).coerce
+      semantics <- interpreter.interpret(results).coerce
+    } yield semantics
   }
 
   /*

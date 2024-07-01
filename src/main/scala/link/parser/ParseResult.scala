@@ -1,15 +1,37 @@
 package link.parser
 
+import link.LinkError
 import link.graph.SentenceEdgeSyntax
 import link.graph.ImmutableSentenceGraph
 import link.graph.ImmutableSentenceGraph.{T => SentenceGraph}
 import link.rule.{WordTag, LinkTag}
 
+sealed trait ParseOutcome[W] {
+  def merge(r2: ParseOutcome[W]): ParseOutcome[W]
+  def tagWord(index: Int, newTags: List[WordTag]): ParseOutcome[W]
+}
+
+case class ParseFailure[W](
+  wordPositions: List[(W, Int)],
+) extends LinkError(s"Parse failed at ${wordPositions.map(_._2).mkString(",")}") with ParseOutcome[W] {
+  def merge(r2: ParseOutcome[W]): ParseOutcome[W] = {
+    r2 match {
+      case ParseFailure(wps) => ParseFailure(wordPositions ++ wps)
+      case _ => this
+    }
+  } 
+
+  def mergeFailure(pf: ParseFailure[W]): ParseFailure[W] = 
+    ParseFailure((wordPositions ++ pf.wordPositions).distinct)
+
+  def tagWord(index: Int, newTags: List[WordTag]): ParseOutcome[W] = this
+}
+
 case class ParseResult[W](
   graph: SentenceGraph,
   words: Vector[W],
   tags: Vector[List[WordTag]]
-) {
+) extends ParseOutcome[W] {
   def addLink(w1: Int, w2: Int, linkTag: LinkTag): ParseResult[W] = {
     import SentenceEdgeSyntax._
     val link = w1 ~ w2 :+ linkTag.simplify
@@ -21,7 +43,7 @@ case class ParseResult[W](
     )
   }
 
-  def tagWord(index: Int, newTags: List[WordTag]): ParseResult[W] = {
+  def tagWord(index: Int, newTags: List[WordTag]): ParseOutcome[W] = {
     ParseResult(
       graph,
       words,
@@ -35,18 +57,24 @@ case class ParseResult[W](
     )
   }
 
-  def merge(r2: ParseResult[W]): ParseResult[W] = {
-    require(r2.words == words)
+  def merge(r2: ParseOutcome[W]): ParseOutcome[W] = {
+    r2 match {
+      case ParseFailure(wps) => ParseFailure(wps)     
+      case ParseResult(g2, w2, t2) => {
+        // TODO - give another parsefailure - don't crash
+        // require(w2 == words)
 
-    val mergedTags = Vector.tabulate(words.length) { n =>
-      (tags(n) ++ r2.tags(n)).distinct
+        val mergedTags = Vector.tabulate(words.length) { n =>
+          (tags(n) ++ t2(n)).distinct
+        }
+
+        ParseResult(
+          graph union g2,
+          words,
+          mergedTags,
+        )  
+      }
     }
-
-    ParseResult(
-      graph union r2.graph,
-      words,
-      mergedTags,
-    )  
   }
 
   def tokenTags(position: Int): Seq[WordTag] =

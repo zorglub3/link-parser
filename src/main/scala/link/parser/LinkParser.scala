@@ -2,9 +2,7 @@ package link.parser
 
 import link.rule._
 
-// TODO return Either[ParseError, X] where X is either Int or List[ParseResult]
-// TODO figure out how to make linkParse function return only an error if there
-//      are no valid parses at all.
+// TODO fix ParseFailure - data is not so useful
 class LinkParser[W](val ruleMap: RuleMap[W]) {
   def ruleMapEntries(sentence: Vector[W]): Vector[List[RuleMap.Entry]] =
     sentence.map(ruleMap.lookup)
@@ -78,10 +76,10 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
     } .sum
   }
 
-  def links(words: Vector[W]): List[ParseResult[W]] = {
+  def links(words: Vector[W]): Either[ParseFailure[W], List[ParseResult[W]]] = {
     val wordRuleEntries = words.map(ruleMap.lookup _)
 
-    def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[ParseResult[W]] = 
+    def makeLink(w1: Int, w2: Int, as: List[LinkRule.RightLink], bs: List[LinkRule.LeftLink]): List[ParseOutcome[W]] = 
       (as, bs) match {
         case (a :: _, b :: _) if a.linkTag.matches(b.linkTag) => {
           List(ParseResult.withLink(words, w1, w2, a.linkTag))
@@ -89,25 +87,25 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
         case _ => List.empty
       }
 
-    def product(as: List[ParseResult[W]], bs: => List[ParseResult[W]]): List[ParseResult[W]] = 
+    def product(as: List[ParseOutcome[W]], bs: => List[ParseOutcome[W]]): List[ParseOutcome[W]] = 
       for {
         a <- as
         b <- bs
       } yield a merge b
 
-    def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[ParseResult[W]] = {
+    def link(leftIndex: Int, rightIndex: Int, l: List[LinkRule.LeftLink], r: List[LinkRule.RightLink]): List[ParseOutcome[W]] = {
       if(leftIndex + 1 == rightIndex) {
         if(l.isEmpty && r.isEmpty) {
           List(ParseResult.emptyFromWords(words))
         } else {
-          List()
+          List(ParseFailure(List( words(leftIndex) -> leftIndex)))
         }
       } else {
-        val links = collection.mutable.ListBuffer[ParseResult[W]]()
+        val links = collection.mutable.ListBuffer[ParseOutcome[W]]()
 
         for(w <- leftIndex + 1 until rightIndex) {
           for(entry <- wordRuleEntries(w)) {
-            val localLinks = collection.mutable.ListBuffer[ParseResult[W]]()
+            val localLinks = collection.mutable.ListBuffer[ParseOutcome[W]]()
 
             val tags = entry.wordTags
             val linkRule = entry.linkRule
@@ -140,22 +138,30 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
       }
     }
 
-    def conjunctParses(start: Int, wordTags: List[WordTag], linkRule: LinkRule.LinkList): List[ParseResult[W]] = {
-      if(linkRule.leftLinks.isEmpty) {
-        if(linkRule.rightLinks.isEmpty && start < words.length) {
-          wordRuleEntries(start + 1).map { case RuleMap.Entry(wordTags, linkRule) =>
-            conjunctParses(start + 1, wordTags, linkRule)
-          } .reduce(_ ++ _)
-        } else {
-          link(start, words.length, List.empty, linkRule.rightLinks).map(_.tagWord(start, wordTags))
-        }
+    def parseFrom(i: Int) = 
+      wordRuleEntries(i)
+        .filter( _.linkRule.l.isEmpty)
+        .map { case RuleMap.Entry(wordTags, linkRule) =>
+          link(i, words.length, List.empty, linkRule.rightLinks)
+            .map(_.tagWord(i, wordTags))
+        } .flatten
+
+    val wallStart = parseFrom(0)
+    val normStart = if(words.length > 1) { parseFrom(1) } else { List.empty }
+
+    def processOutcomes(outcomes: List[ParseOutcome[W]]): Either[ParseFailure[W], List[ParseResult[W]]] = {
+      val results: List[ParseResult[W]] = outcomes.collect { case pr: ParseResult[W] => pr } 
+      val failures: List[ParseFailure[W]] = outcomes.collect { case pf: ParseFailure[W] => pf }
+
+      if(results.isEmpty && failures.isEmpty) {
+        Left(ParseFailure(List.empty))
+      } else if(!results.isEmpty) {
+        Right(results)
       } else {
-        List.empty
+        Left(failures.reduce(_ mergeFailure _))
       }
     }
- 
-    wordRuleEntries(0).map { case RuleMap.Entry(wordTags, linkRule) =>
-      conjunctParses(0, wordTags, linkRule)
-    } .reduce(_ ++ _)
+
+    processOutcomes(wallStart ++ normStart)
   }
 }

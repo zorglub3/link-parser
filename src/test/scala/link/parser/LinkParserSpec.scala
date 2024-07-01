@@ -74,4 +74,28 @@ class LinkParserSpec extends AnyFlatSpec with Matchers {
     parser.check(Vector("the", "runs", "dog")) shouldBe 0
     parser.links(Vector("the", "runs", "dog")).length shouldBe 0
   }
+
+  it should "only use word tags from rules that are applicable" in {
+    import link.english._
+    import link.tokenizer.Tokenizer
+    
+    val b = 
+      new EnglishLexiconBuilder 
+        with StandardVerbs 
+        with StandardWords 
+        with StandardNouns 
+        with StandardAdjectives 
+        with StandardAdverbs
+    val tokenLexicon = b.tokenLexicon
+    val tokenizer = new Tokenizer[String](tokenLexicon, " ")
+    val parser = new LinkParser[String](b.ruleMap)
+
+    tokenizer("run").map(parser.links) match {
+      case Right(res1) => {
+        import lexicon.EnglishWordTags._
+        res1.head.tags(1) should contain theSameElementsAs List(Intransitive, Verb, Root, VerbRoot("run"))
+      }
+      case Left(_) => fail("sentence should parse")
+    }
+  }
 }
