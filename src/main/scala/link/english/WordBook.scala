@@ -4,8 +4,7 @@ import link.language.NounPhrase.Gender
 import link.writer.Casus
 import link.writer.LanguageWriter.VerbForm
 import link.writer.WriteError
-import link.language.VerbPhrase
-import link.language.VerbPhrase.Tense
+import link.language.Tense
 import link.english.lexicon.{EnglishWordTags => WT, EnglishLexiconEntry}
 import link.english.lexicon.EnglishLexiconEntry.WordEntry
 
@@ -28,17 +27,17 @@ class WordBook(entries: List[EnglishLexiconEntry]) {
 
   private def verbTense(we: WordEntry): Tense = {
     if(we.tags.contains(WT.Root)) {
-      VerbPhrase.Imperative
+      Tense.Imperative
     } else if(we.tags.contains(WT.Present)) {
-      VerbPhrase.Present
+      Tense.Present
     } else if(we.tags.contains(WT.Past)) {
-      VerbPhrase.Past
+      Tense.Past
     } else if(we.tags.contains(WT.PresentParticiple)) {
-      VerbPhrase.PresentParticiple
+      Tense.PresentParticiple
     } else if(we.tags.contains(WT.PastParticiple)) {
-      VerbPhrase.PastParticiple
+      Tense.PastParticiple
     } else {
-      VerbPhrase.Imperative
+      Tense.Imperative
     }
   }
     
@@ -73,13 +72,13 @@ class WordBook(entries: List[EnglishLexiconEntry]) {
   def lookupVerb(root: String, verbForm: Option[VerbForm], tense: Tense): Either[WriteError[String], String] = {
     if(root == "be") {
       (verbForm, tense) match {
-        case (Some(VerbForm(1, false)), VerbPhrase.Present) => Right("am")
-        case (Some(VerbForm(2, false)), VerbPhrase.Present) => Right("are")
-        case (Some(VerbForm(3, false)), VerbPhrase.Present) => Right("is")
-        case (_, VerbPhrase.Present) => Right("are")
-        case (Some(VerbForm(1, false)), VerbPhrase.Past) => Right("was")
-        case (Some(VerbForm(3, false)), VerbPhrase.Past) => Right("was")
-        case (_, VerbPhrase.Past) => Right("were")
+        case (Some(VerbForm(1, false)), Tense.Present) => Right("am")
+        case (Some(VerbForm(2, false)), Tense.Present) => Right("are")
+        case (Some(VerbForm(3, false)), Tense.Present) => Right("is")
+        case (_, Tense.Present) => Right("are")
+        case (Some(VerbForm(1, false)), Tense.Past) => Right("was")
+        case (Some(VerbForm(3, false)), Tense.Past) => Right("was")
+        case (_, Tense.Past) => Right("were")
         case _ => Right("[... to be ...]")
       }      
     } else {

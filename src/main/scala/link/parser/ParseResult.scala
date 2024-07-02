@@ -11,18 +11,37 @@ sealed trait ParseOutcome[W] {
   def tagWord(index: Int, newTags: List[WordTag]): ParseOutcome[W]
 }
 
-case class ParseFailure[W](
+sealed abstract class ParseFailure[W](msg: String) extends LinkError(msg) with ParseOutcome[W] {
+  def mergeFailure(pf: ParseFailure[W]): ParseFailure[W]
+}
+
+case class MismatchedWords[W](w1: Vector[W], w2: Vector[W]) 
+extends ParseFailure[W](s"word list [${w1.mkString(",")}] does not match word list [${w2.mkString(",")}]") {
+  def merge(r2: ParseOutcome[W]): ParseOutcome[W] = this 
+
+  def mergeFailure(pf: ParseFailure[W]): ParseFailure[W] = 
+    this
+
+  def tagWord(index: Int, newTags: List[WordTag]): ParseOutcome[W] = this
+}
+
+case class ParseLinkError[W](
   wordPositions: List[(W, Int)],
-) extends LinkError(s"Parse failed at ${wordPositions.map(_._2).mkString(",")}") with ParseOutcome[W] {
+) extends ParseFailure[W](s"Parse failed at ${wordPositions.map(_._2).mkString(",")}") {
   def merge(r2: ParseOutcome[W]): ParseOutcome[W] = {
     r2 match {
-      case ParseFailure(wps) => ParseFailure(wordPositions ++ wps)
+      case ParseLinkError(wps) => ParseLinkError((wordPositions ++ wps).distinct)
       case _ => this
     }
   } 
 
-  def mergeFailure(pf: ParseFailure[W]): ParseFailure[W] = 
-    ParseFailure((wordPositions ++ pf.wordPositions).distinct)
+  def mergeFailure(pf: ParseFailure[W]): ParseFailure[W] = {
+    pf match {
+      case MismatchedWords(w1, w2) => MismatchedWords(w1, w2)
+      case ParseLinkError(wps) => ParseLinkError((wordPositions ++ wps).distinct)
+      case _ => this
+    }
+  } 
 
   def tagWord(index: Int, newTags: List[WordTag]): ParseOutcome[W] = this
 }
@@ -59,21 +78,22 @@ case class ParseResult[W](
 
   def merge(r2: ParseOutcome[W]): ParseOutcome[W] = {
     r2 match {
-      case ParseFailure(wps) => ParseFailure(wps)     
       case ParseResult(g2, w2, t2) => {
-        // TODO - give another parsefailure - don't crash
-        // require(w2 == words)
+        if(w2 != words) {
+          MismatchedWords(words, w2)
+        } else {
+          val mergedTags = Vector.tabulate(words.length) { n =>
+            (tags(n) ++ t2(n)).distinct
+          }
 
-        val mergedTags = Vector.tabulate(words.length) { n =>
-          (tags(n) ++ t2(n)).distinct
+          ParseResult(
+            graph union g2,
+            words,
+            mergedTags,
+          )  
         }
-
-        ParseResult(
-          graph union g2,
-          words,
-          mergedTags,
-        )  
       }
+      case x => x
     }
   }
 

@@ -105,7 +105,17 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
       val t = tokenizer
       val p = parser
 
-      t(s._1).map(p.links).map(_.length) shouldBe Right(s._2)
+      if(s._2 > 0) {
+        (for {
+          tokens <- t(s._1)
+          links <- p(tokens)
+        } yield links.length) shouldBe Right(s._2)
+      } else {
+        (for {
+          tokens <- t(s._1)
+          links <- p(tokens)
+        } yield links).isLeft shouldBe true
+      }
     }
   }
 
@@ -114,7 +124,7 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     val p = parser
     val s = "i run"
 
-    val gs = t(s).map(p.links)
+    val gs = t(s).flatMap(p.apply)
 
     import link.graph.SentenceEdgeSyntax._
     import link.english.lexicon.EnglishLinkTags._

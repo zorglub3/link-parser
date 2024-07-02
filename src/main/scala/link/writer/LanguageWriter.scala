@@ -1,7 +1,6 @@
 package link.writer
 
 import link.language._
-import link.language.VerbPhrase.Tense
 
 trait LanguageWriter[N, W, WB <: WriteBuffer[W, WB]] {
   import LanguageWriter._
@@ -89,7 +88,7 @@ trait LanguageWriter[N, W, WB <: WriteBuffer[W, WB]] {
     sequence(prepositions.map {
       case PositionPredicate(p, np) => write(p).seq(writeNP(np, Casus.Accusative))
       case TransitiveVerbingPredicate(w, np) => {
-        writeVerb(None, w, VerbPhrase.PresentParticiple)
+        writeVerb(None, w, Tense.PresentParticiple)
           .seq(writeNP(np, Casus.Accusative))
       }
       case _ => writeNothing
@@ -101,7 +100,7 @@ trait LanguageWriter[N, W, WB <: WriteBuffer[W, WB]] {
 
     predicate match {
       case SimplePredicate(r, s) => writeAdjective(r, s)
-      case VerbingPredicate(r) => writeVerb(None, r, VerbPhrase.PresentParticiple)
+      case VerbingPredicate(r) => writeVerb(None, r, Tense.PresentParticiple)
       case PositionPredicate(p, np) => write(p).seq(writeNP(np, Casus.Accusative))
       case _ => writeNothing
     }

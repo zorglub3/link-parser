@@ -2,67 +2,83 @@ package link.language
 
 import ContextMapper.UnmappedObject
 
-sealed abstract class VerbPhrase[N, W](val verb: W, tense: VerbPhrase.Tense) {
+sealed abstract class VerbPhrase[N, W](val verb: W, tense: Tense) {
   val obj: Option[N]
-
-  // def adverbs: List[Predicate.Adverbial[N, W]]
-  // def prepositions: List[Predicate.PositionPredicate[N, W]]
 
   def mapNP[M, CM <: ContextMapper[N, M, CM]](
     context: CM
-  ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = ??? // TODO
-}
-
-sealed trait BaseVerbPhrase[N, W] { self: VerbPhrase[N, W] =>
-  // def adverbs: List[Predicate.Adverbial[N, W]]
-  // def prepositions: List[Predicate.PositionPredicate[N, W]]
-
-  // def mapNP[M](context: ContextMapper[N, M]): Either[ContextMapper.UnmappedObject[N], (VerbPhrase[M, W], ContextMapper[N, M])] = ???
+  ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)]
 }
 
 object VerbPhrase {
+  def mapPredicates[W, N, M, CM <: ContextMapper[N, M, CM]](
+    context: CM, 
+    ps: List[Predicate[N, W]]
+  ): Either[UnmappedObject[N], (List[Predicate[M, W]], CM)] = {
+    ps match {
+      case Nil => Right( (Nil, context) )
+      case h :: t => {
+        for {
+          p1 <- h.mapNP[M, CM](context)
+          p2 <- mapPredicates[W, N, M, CM](p1._2, t)
+        } yield (p1._1 :: p2._1, p2._2)
+      }
+    }
+  } 
+
   final case class IntransitiveVerbPhrase[N, W](
     v: W, t: Tense, 
     predicates: List[Predicate[N, W]]
-  ) extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
+  ) extends VerbPhrase[N, W](v, t) {
     val obj = None
 
-    def adverbs = 
-      predicates
-        .collect { case x: Predicate.Adverbial[N, W] => x } 
-        .toList
-
-    def prepositions = 
-      predicates
-        .collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
+    def mapNP[M, CM <: ContextMapper[N, M, CM]](
+      context: CM
+    ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = {
+      for {
+        p <- mapPredicates[W, N, M, CM](context, predicates)
+      } yield (IntransitiveVerbPhrase(v, t, p._1), p._2)
+    }
   }
 
   final case class TransitiveVerbPhrase[N, W](v: W, t: Tense, o: N, predicates: List[Predicate[N, W]]) 
-  extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
+  extends VerbPhrase[N, W](v, t) {
     val obj = Some(o)
-    def adverbs = predicates.collect { case x: Predicate.Adverbial[N, W] => x } .toList
-    def prepositions = predicates.collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
+
+    def mapNP[M, CM <: ContextMapper[N, M, CM]](
+      context: CM
+    ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = {
+      for {
+        p1 <- context.mapNP(o)
+        p2 <- mapPredicates[W, N, M, CM](p1._2, predicates)
+      } yield (TransitiveVerbPhrase(v, t, p1._1, p2._1), p2._2)
+    }
   }
 
   final case class LinkVerbPhrase[N, W](v: W, t: Tense, p: Predicate[N, W], predicates: List[Predicate[N, W]]) 
-  extends VerbPhrase[N, W](v, t) with BaseVerbPhrase[N, W] {
+  extends VerbPhrase[N, W](v, t) {
     val obj = None
-    def adverbs = predicates.collect { case x: Predicate.Adverbial[N, W] => x } .toList
-    def prepositions = predicates.collect { case x: Predicate.PositionPredicate[N, W] => x } .toList
+
+    def mapNP[M, CM <: ContextMapper[N, M, CM]](
+      context: CM
+    ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = {
+      for {
+        p1 <- p.mapNP[M, CM](context)
+        p2 <- mapPredicates[W, N, M, CM](p1._2, predicates)
+      } yield (LinkVerbPhrase(v, t, p1._1, p2._1), p2._2)
+    }
   }
 
-  final case class HelpVerbPhrase[N, W](v: W, t: Tense, vp: VerbPhrase[N, W] with BaseVerbPhrase[N, W]) 
-  extends VerbPhrase[N, W](v, t) { // TODO - FIXME - v t are wrong here - should be from vp 
+  final case class HelpVerbPhrase[N, W](v: W, t: Tense, vp: VerbPhrase[N, W]) 
+  extends VerbPhrase[N, W](vp.verb, t) {
     val obj = None
-    // def adverbs = vp.adverbs
-    // def prepositions = vp.prepositions
+
+    def mapNP[M, CM <: ContextMapper[N, M, CM]](
+      context: CM
+    ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = {
+      for {
+        p <- vp.mapNP[M, CM](context)
+      } yield (HelpVerbPhrase(v, t, p._1), p._2)
+    }
   }
-
-  sealed trait Tense
-
-  case object Present extends Tense
-  case object Past extends Tense
-  case object PresentParticiple extends Tense
-  case object PastParticiple extends Tense
-  case object Imperative extends Tense
 }

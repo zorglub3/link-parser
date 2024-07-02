@@ -57,6 +57,7 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
       }
     }
 
+    // TODO clean up this mess...
     def conjunctParses(start: Int, conjunct: LinkRule.LinkList): Int = {
       if(conjunct.leftLinks.isEmpty) {
         if(conjunct.rightLinks.isEmpty && start < words.length) {
@@ -98,7 +99,7 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
         if(l.isEmpty && r.isEmpty) {
           List(ParseResult.emptyFromWords(words))
         } else {
-          List(ParseFailure(List( words(leftIndex) -> leftIndex)))
+          List(ParseLinkError(List( words(leftIndex) -> leftIndex)))
         }
       } else {
         val links = collection.mutable.ListBuffer[ParseOutcome[W]]()
@@ -154,7 +155,7 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
       val failures: List[ParseFailure[W]] = outcomes.collect { case pf: ParseFailure[W] => pf }
 
       if(results.isEmpty && failures.isEmpty) {
-        Left(ParseFailure(List.empty))
+        Left(ParseLinkError(List.empty))
       } else if(!results.isEmpty) {
         Right(results)
       } else {
@@ -163,5 +164,9 @@ class LinkParser[W](val ruleMap: RuleMap[W]) {
     }
 
     processOutcomes(wallStart ++ normStart)
+  }
+
+  def apply(words: Vector[W]): Either[ParseFailure[W], List[ParseResult[W]]] = {
+    links(words)
   }
 }

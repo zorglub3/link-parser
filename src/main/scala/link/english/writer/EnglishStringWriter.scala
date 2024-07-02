@@ -3,7 +3,6 @@ package link.english.writer
 import link.english.WordBook
 import link.writer._
 import link.language._
-import link.language.VerbPhrase.Tense
 
 class EnglishStringWriter[WB <: WriteBuffer[String, WB]](wordbook: WordBook) extends LanguageWriter[NounPhrase[String], String, WB] {
   import LanguageWriter.VerbForm

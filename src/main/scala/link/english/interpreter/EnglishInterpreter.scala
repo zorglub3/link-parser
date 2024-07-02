@@ -154,19 +154,19 @@ class EnglishInterpreter {
     }
   }
 
-  def verbTense(result: ParseResult[String], w: Int): VerbPhrase.Tense = {
+  def verbTense(result: ParseResult[String], w: Int): Tense = {
     import result._
     
     if(tokenHasTag(w, EnglishWordTags.Present)) {
-      VerbPhrase.Present
+      Tense.Present
     } else if(tokenHasTag(w, EnglishWordTags.Past)) {
-      VerbPhrase.Past
+      Tense.Past
     } else if(tokenHasTag(w, EnglishWordTags.PresentParticiple)) {
-      VerbPhrase.PresentParticiple
+      Tense.PresentParticiple
     } else if(tokenHasTag(w, EnglishWordTags.PastParticiple)) {
-      VerbPhrase.PastParticiple
+      Tense.PastParticiple
     } else {
-      VerbPhrase.Imperative
+      Tense.Imperative
     }
   }
   
@@ -186,7 +186,7 @@ class EnglishInterpreter {
     adverbs(result, w) ++ prepositions(result, w)    
   }
 
-  def interpretBaseVP(result: ParseResult[String], w: Int): Option[VerbPhrase[NounPhrase[String], String] with BaseVerbPhrase[NounPhrase[String], String]] = {
+  def interpretBaseVP(result: ParseResult[String], w: Int): Option[VerbPhrase[NounPhrase[String], String]] = {
     import result._
     
     if(tokenHasTag(w, EnglishWordTags.Verb)) {
@@ -299,5 +299,9 @@ class EnglishInterpreter {
       case Nil => Left(InterpretationError("No valid interpretations"))
       case h :: t => Right(h :: t)
     }
+  }
+
+  def apply(results: List[ParseResult[String]]): Either[InterpretationError, List[SimpleSentence[NounPhrase[String], String]]] = {
+    interpret(results)
   }
 }

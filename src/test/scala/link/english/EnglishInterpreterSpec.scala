@@ -13,6 +13,7 @@ class EnglishInterpreterSpec extends AnyFlatSpec with Matchers {
   def tokenLexicon = b.tokenLexicon
   def tokenizer = new Tokenizer[String](tokenLexicon, " ")
   def parser = new LinkParser[String](b.ruleMap)
+  def interpreter = new EnglishInterpreter
 
   "An English parse result interpreter" should "dummy" in {
     true shouldBe true
@@ -37,22 +38,21 @@ class EnglishInterpreterSpec extends AnyFlatSpec with Matchers {
     it should s"interpret $s as imperative" in {
       val t = tokenizer
       val p = parser
+      val i = interpreter
 
-      t(s).map(p.links) match {
-        case Right(xs) => { 
-          xs.length should be >= 1
-          
-          xs.foreach { result =>
-            val interpreter = new EnglishInterpreter
+      (for {
+        tokens <- t(s)
+        results <- p(tokens)
+        semantics <- i(results)
+      } yield {
+        semantics.foreach { 
+          case SimpleSentence.Imperative(_) => { /* ok */ }
+          case x => fail(s"wrong interpretation. Got $x")
+        } 
 
-            interpreter.interpretS(result) match {
-              case Some(SimpleSentence.Imperative(_)) => {}
-              case Some(x) => fail(s"Should be imperative sentence, got $x")
-              case None => fail(s"Failed to interpret parsed sentence")
-            }
-          } 
-        }
-        case Left(e) => fail(s"Parsing produced error: $e")
+        semantics
+      }).left.foreach { e => 
+        fail(s"failed to parse/interpret sentence. Error: $e")
       }
     }
   }
@@ -61,22 +61,21 @@ class EnglishInterpreterSpec extends AnyFlatSpec with Matchers {
     it should s"interpret $s as a statement" in {
       val t = tokenizer
       val p = parser
+      val i = interpreter
 
-      t(s).map(p.links) match {
-        case Right(xs) => { 
-          xs.length should be >= 1
-          
-          xs.foreach { result =>
-            val interpreter = new EnglishInterpreter
+      (for {
+        tokens <- t(s)
+        results <- p(tokens)
+        semantics <- i(results)
+      } yield {
+        semantics.foreach { 
+          case SimpleSentence.Statement(_, _) => { /* ok */ }
+          case x => fail(s"wrong interpretation. Got $x")
+        } 
 
-            interpreter.interpretS(result) match {
-              case Some(SimpleSentence.Statement(_, _)) => {}
-              case Some(x) => fail(s"Should be statement sentence, got $x")
-              case None => fail(s"Failed to interpret parsed sentence")
-            }
-          } 
-        }
-        case Left(e) => fail(s"Parsing produced error: $e")
+        semantics
+      }).left.foreach { e => 
+        fail(s"failed to parse/interpret sentence. Error: $e")
       }
     }
   }
