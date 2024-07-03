@@ -14,6 +14,21 @@ sealed abstract class Predicate[N, W] {
 }
 
 object Predicate {
+  def mapPredicates[W, N, M, CM <: ContextMapper[N, M, CM]](
+    context: CM, 
+    ps: List[Predicate[N, W]]
+  ): Either[UnmappedObject[N], (List[Predicate[M, W]], CM)] = {
+    ps match {
+      case Nil => Right( (Nil, context) )
+      case h :: t => {
+        for {
+          p1 <- h.mapNP[M, CM](context)
+          p2 <- mapPredicates[W, N, M, CM](p1._2, t)
+        } yield (p1._1 :: p2._1, p2._2)
+      }
+    }
+  } 
+  
   case class SimplePredicate[N, W](root: W, superlative: Boolean) extends Predicate[N, W] {
     override def adjectiveLike = true
     override def linkObjectLike = true

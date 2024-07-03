@@ -11,21 +11,6 @@ sealed abstract class VerbPhrase[N, W](val verb: W, tense: Tense) {
 }
 
 object VerbPhrase {
-  def mapPredicates[W, N, M, CM <: ContextMapper[N, M, CM]](
-    context: CM, 
-    ps: List[Predicate[N, W]]
-  ): Either[UnmappedObject[N], (List[Predicate[M, W]], CM)] = {
-    ps match {
-      case Nil => Right( (Nil, context) )
-      case h :: t => {
-        for {
-          p1 <- h.mapNP[M, CM](context)
-          p2 <- mapPredicates[W, N, M, CM](p1._2, t)
-        } yield (p1._1 :: p2._1, p2._2)
-      }
-    }
-  } 
-
   final case class IntransitiveVerbPhrase[N, W](
     v: W, t: Tense, 
     predicates: List[Predicate[N, W]]
@@ -36,7 +21,7 @@ object VerbPhrase {
       context: CM
     ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = {
       for {
-        p <- mapPredicates[W, N, M, CM](context, predicates)
+        p <- Predicate.mapPredicates[W, N, M, CM](context, predicates)
       } yield (IntransitiveVerbPhrase(v, t, p._1), p._2)
     }
   }
@@ -50,7 +35,7 @@ object VerbPhrase {
     ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = {
       for {
         p1 <- context.mapNP(o)
-        p2 <- mapPredicates[W, N, M, CM](p1._2, predicates)
+        p2 <- Predicate.mapPredicates[W, N, M, CM](p1._2, predicates)
       } yield (TransitiveVerbPhrase(v, t, p1._1, p2._1), p2._2)
     }
   }
@@ -64,7 +49,7 @@ object VerbPhrase {
     ): Either[UnmappedObject[N], (VerbPhrase[M, W], CM)] = {
       for {
         p1 <- p.mapNP[M, CM](context)
-        p2 <- mapPredicates[W, N, M, CM](p1._2, predicates)
+        p2 <- Predicate.mapPredicates[W, N, M, CM](p1._2, predicates)
       } yield (LinkVerbPhrase(v, t, p1._1, p2._1), p2._2)
     }
   }

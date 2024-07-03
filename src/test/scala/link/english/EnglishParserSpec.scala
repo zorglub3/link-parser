@@ -81,6 +81,12 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     "those are big" -> 1,
     "he is running" -> 1,
     "we are drinking the beer" -> 1,
+    "the table stands in the middle of the room" -> 1,
+    "the table is very red" -> 1,
+    "he runs north" -> 1,
+    "I look south" -> 1,
+    "I am north" -> 0,
+    "she drinks south" -> 0,
   )
 
   "An English parser checker" should "dummy" in {
