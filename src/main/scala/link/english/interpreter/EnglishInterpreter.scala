@@ -69,13 +69,13 @@ class EnglishInterpreter {
     
   def isLinkVerb(result: ParseResult[String], w: Int): Boolean = ???
   
-  def pronounGender(result: ParseResult[String], w: Int): Option[NounPhrase.Gender] = {
+  def pronounGender(result: ParseResult[String], w: Int): Option[Gender] = {
     import result._
     
     if(tokenHasTag(w, EnglishWordTags.MaleGender)) {
-      Some(NounPhrase.MaleGender)
+      Some(Gender.Male)
     } else if(tokenHasTag(w, EnglishWordTags.FemaleGender)) {
-      Some(NounPhrase.FemaleGender)
+      Some(Gender.Female)
     } else {
       None
     }

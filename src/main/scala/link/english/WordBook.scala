@@ -1,6 +1,6 @@
 package link.english
 
-import link.language.NounPhrase.Gender
+import link.language.Gender
 import link.writer.Casus
 import link.writer.LanguageWriter.VerbForm
 import link.writer.WriteError
