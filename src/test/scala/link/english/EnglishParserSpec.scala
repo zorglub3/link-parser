@@ -7,7 +7,7 @@ import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
 class EnglishParserSpec extends AnyFlatSpec with Matchers {
-  def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives with StandardAdverbs
+  def b = new EnglishLexiconBuilder with StandardVerbs with StandardWords with StandardNouns with StandardAdjectives with StandardAdverbs with StandardPrepositions
   def tokenLexicon = b.tokenLexicon
   def tokenizer = new Tokenizer[String](tokenLexicon, " ")
   def parser = new LinkParser[String](b.ruleMap)
@@ -43,7 +43,7 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     "who pick up the table" -> 0,
     "who runs" -> 1,
     "who run" -> 0,
-    // "is it a table" -> 1,
+    "is it a table" -> 1,
     "the table is big" -> 1,
     "i am smallest" -> 1,
     "the dark table is biggest" -> 1,
@@ -85,8 +85,17 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
     "the table is very red" -> 1,
     "he runs north" -> 1,
     "I look south" -> 1,
+    "I go north along the road" -> 1,
     "I am north" -> 0,
     "she drinks south" -> 0,
+    "if I have a bottle, then I drink it" -> 1,
+    "I drink a sip of water from another glass" -> 1,
+    "drink from this glass" -> 1,
+    "do not drink from those" -> 1,
+    "do not drink from those bottles" -> 1,
+    "he took two tables" -> 1,
+    "I take five" -> 1,
+    "I take 5" -> 1,
   )
 
   "An English parser checker" should "dummy" in {

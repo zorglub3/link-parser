@@ -15,6 +15,7 @@ object EnglishWordTags {
   case object Wall extends WordTag("wall")
   case object ProperNoun extends WordTag("propernoun")
   case object Negation extends WordTag("negation")
+  case object Direction extends WordTag("direction")
 
   // pronoun specific
   case class Person(person: Int) extends WordTag("pronounperson")
@@ -39,8 +40,10 @@ object EnglishWordTags {
   case object Singular extends WordTag("singular")
   case object Plural extends WordTag("plural")
 
-  // noun root
+  // nouns
   case class NounRoot(root: String) extends WordTag("nounroot")
+  case object CountNoun extends WordTag("countnoun")
+  case object MassNoun extends WordTag("massnoun")
 
   // tense
   case object Root extends WordTag("root")

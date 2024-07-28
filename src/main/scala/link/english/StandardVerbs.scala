@@ -4,15 +4,14 @@ import link.english.lexicon._
 
 trait StandardVerbs { self: EnglishLexiconBuilder =>
   addEntries(List(
-    // linkingVerb('look, "look", "looks", "look", "looking", "looked", "looked"),
-    // linkingVerb('smell, "smell", "smells", "smell", "smelling", "smelled", "smelled"),
-    // linkingVerb('sound, "sound", "sounds", "sound", "sounding", "sounded", "sounded"),
 
     IntransitiveVerb("move", "moves", "move", "moving", "moved", "moved"),
     IntransitiveVerb("walk", "walks", "walk", "walking", "walked", "walked"),
     IntransitiveVerb("crawl", "crawls", "crawl", "crawling", "crawled", "crawled"),
     IntransitiveVerb("run", "runs", "run", "running", "ran", "run"),
     IntransitiveVerb("drink", "drinks", "drink", "drinking", "drank", "drunken"),
+    IntransitiveVerb("go", "goes", "go", "going", "went", "gone"),
+    IntransitiveVerb("look", "looks", "look", "looking", "looked", "looked"),
 
     TransitiveVerb("move", "moves", "move", "moving", "moved", "moved"),
     TransitiveVerb("take", "takes", "take", "taking", "took", "taken"),
@@ -23,6 +22,8 @@ trait StandardVerbs { self: EnglishLexiconBuilder =>
 
     LinkVerb("look", "looks", "look", "looking", "looked", "looked"),
     LinkVerb("smell", "smells", "smell", "smelling", "smelled", "smelled"),
+    LinkVerb("look", "looks", "look", "looking", "looked", "looked"),
+    LinkVerb("sound", "sounds", "sound", "sounding", "sounded", "sounded"),
 
     HelpVerb("do", "does", "do", "doing", "did", "done"),
     HelpVerb("will", "will", "will", "willing", "would", "willed"),

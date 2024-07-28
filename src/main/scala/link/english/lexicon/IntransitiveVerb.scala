@@ -15,7 +15,7 @@ case class IntransitiveVerb(
   import LinkRuleSyntax._
   import EnglishLexiconEntry.WordEntry
 
-  val activeVerb = opt(l(A)) & opt(r(A)) & opt(r(P))
+  val activeVerb = opt(l(A)) & opt(r(A)) & opt(r(E)) & opt(r(P)) 
 
   val wordEntries =
     List(

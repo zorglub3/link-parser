@@ -16,6 +16,8 @@ object EnglishLinkTags {
   case object Ds extends LinkTag("Ds") // singular: a, an, every, one, any
   case object Dp extends LinkTag("Dp") // plural: all, many
   case object D  extends LinkTag("D")  // singular/plural: the, some
+  // Direction
+  case object E extends LinkTag("E") // because 'D' was taken :-P
   // A: verb-adverb binding
   case object A extends LinkTag("A")
   // H: helpverb-verb binding (suffix has same meaning as for S- tags)

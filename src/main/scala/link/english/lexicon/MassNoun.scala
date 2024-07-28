@@ -5,9 +5,8 @@ import link.english.lexicon.EnglishLinkTags._
 import link.english.lexicon.EnglishWordTags._
 
 // your regular count nouns such as chair, rock or glass
-case class Noun(
+case class MassNoun(
   singular: String,
-  plural: String
 ) extends EnglishLexiconEntry {
   import LinkRuleSyntax._
   import EnglishLexiconEntry.WordEntry
@@ -24,13 +23,8 @@ case class Noun(
     List(
       WordEntry(
         singular,
-        List(EnglishWordTags.Noun, Singular, NounRoot(singular), EnglishWordTags.CountNoun),
+        List(EnglishWordTags.Noun, Singular, NounRoot(singular), EnglishWordTags.MassNoun),
         ((singularNoun & singularNounVerb) | (singularNoun & l(R)) | (singularNoun & l(W))),
-      ),
-      WordEntry(
-        plural,
-        List(EnglishWordTags.Noun, Plural, NounRoot(singular), EnglishWordTags.CountNoun),
-        ((pluralNoun & pluralNounVerb) | (pluralNoun & l(R)) | (pluralNoun & l(W))),
       ),
     )
 }

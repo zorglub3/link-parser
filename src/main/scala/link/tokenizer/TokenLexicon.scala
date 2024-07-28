@@ -11,7 +11,9 @@ trait TokenLexicon[W] {
   def rightWall: W
 }
 
+// TODO make "ignoreCase" optional
 class StringTokenLexiconBuilder {
+  val ignoreCase = true
   val tokens = HashSet[String]()
   val tokenTags = MultiDict.empty[String, WordTag]
 
@@ -27,28 +29,39 @@ class StringTokenLexiconBuilder {
   }
 
   def addToken(t: String): Unit = {
-    if(t.contains('_')) {
-      val parts = t.split("_")
+    val tt = if(ignoreCase) { t.toLowerCase() } else { t }
+
+    if(tt.contains('_')) {
+      val parts = tt.split("_")
       addConcatToken(parts.toList)
     } 
 
-    addStringToken(t)
+    addStringToken(tt)
   }
 
   def addTokenTag(t: String, tag: WordTag): Unit = {
-    tokenTags.addOne(t -> tag)
+    val tt = if(ignoreCase) { t.toLowerCase() } else { t }
+
+    tokenTags.addOne(tt -> tag)
   }
 
   def result: TokenLexicon[String] = new TokenLexicon[String] {
+    val ic = ignoreCase
     val tokenSet = tokens.clone()
     val concatTokensMap = concatTokens.collect { x => x }
     val tags = tokenTags.collect { x => x }
 
-    def lookup(t: String): Option[Vector[String]] =
-      if(tokenSet.contains(t)) { Some(Vector(t)) } else { None }
+    def lookup(t: String): Option[Vector[String]] = {
+      val tt = if(ic) { t.toLowerCase() } else { t }
 
-    def tags(token: String): List[WordTag] = 
-      tags.get(token).toList
+      if(tokenSet.contains(tt)) { Some(Vector(t)) } else { None }
+    }
+
+    def tags(token: String): List[WordTag] = { 
+      val tt = if(ic) { token.toLowerCase() } else { token }
+
+      tags.get(tt).toList
+    }
     
     def concat(tokens: List[String]): List[String] = {
       def matchList(head: String, pattern: List[String], tail: List[String]): Option[(String, List[String])] = {
@@ -87,7 +100,8 @@ class StringTokenLexiconBuilder {
         }
       }
 
-      iterate(List.newBuilder[String], tokens).reverse
+      val tt = if(ic) { tokens.map(_.toLowerCase()) } else { tokens }
+      iterate(List.newBuilder[String], tt).reverse
     }
 
     def leftWall: String = Tokenizer.LEFT_WALL
