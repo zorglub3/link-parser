@@ -51,6 +51,9 @@ case class ParseResult[W](
   words: Vector[W],
   tags: Vector[List[WordTag]]
 ) extends ParseOutcome[W] {
+  def getWord(w: Int): Option[W] =
+    words.lift(w)
+    
   def addLink(w1: Int, w2: Int, linkTag: LinkTag): ParseResult[W] = {
     import SentenceEdgeSyntax._
     val link = w1 ~ w2 :+ linkTag.simplify
@@ -103,6 +106,9 @@ case class ParseResult[W](
   def tokenHasTag(position: Int, tag: WordTag): Boolean = 
     tokenTags(position).contains(tag)
 
+  def collectTag[T](position: Int)(f: PartialFunction[WordTag, T]): Option[T] =
+    tokenTags(position).collectFirst(f)
+    
   import link.graph.SentenceEdgeSyntax._
 
   def graphEdge(tag: LinkTag): Option[(Int, Int)] =
