@@ -1,75 +1,79 @@
 package amr
 
-case class AMR[Word, Label, Entity](
-  root: AMR.Node[Word, Label, Entity],
-) {
-  def pp: String = {
-    def ppNodes(indent: Int, roles: List[(Role, AMR.Node[Word, Label, Entity])]): List[String] = {
-      val sortedRoles = roles.sortBy(_._1.pp)
-      sortedRoles.map { case (r, n) => ("  " * indent) ++ r.pp ++ " " ++ ppNode(indent, n) }
-    }
+final case class Fix[F[_]](unfix: F[Fix[F]])
 
-    def ppNode(indent: Int, node: AMR.Node[Word, Label, Entity]): String = {
-      node match {
-        case Left(e) => "<entity>"
-        case Right(AMR.GraphNode(w, None, roles)) => { 
-          (s"($w)" :: ppNodes(indent + 1, roles.toList)) .mkString("\n")
-        }
-        case Right(AMR.GraphNode(w, Some(l), roles)) => { 
-          (s"($w / $l)" :: ppNodes(indent + 1, roles.toList)) .mkString("\n")
-        }
-      }
-    }
-
-    ppNode(0, root)
-  }
-
-  // TODO collect and collectFirst, iterators and other patterns
-}
+case class AMR[R[_]](root: Fix[R])
 
 object AMR {
-  type Node[W, L, E] = Either[E, GraphNode[W, L, E]]
-  
-  case class GraphNode[W, L, E](word: W, label: Option[L], roles: Map[Role, Node[W, L, E]])
+  case class Node[W, L, N](
+    word: W, 
+    label: Option[L],
+    roles: Map[Role, N]
+  )
 
-  class Syntax[W, L, E] {
+  class SimpleSyntax[W, L] {
     import scala.language.implicitConversions
-    
+
+    type N[X] = Node[W, L, X]
+    type T = AMR[N]
+
     implicit class WordSyntax(w: W) {
       def /(l: L) = LabelSyntax(w, Some(l))
     }
 
-    case class LabelSyntax(word: W, label: Option[L]) {
-      def nodes(roles: (Role, Node[W, L, E])*): Node[W, L, E] = 
-        Right(GraphNode(word, label, roles.toMap))
+    case class LabelSyntax(w: W, l: Option[L]) {
+      def withNodes(roles: (Role, Fix[N])*): Fix[N] = 
+        Fix(Node(w, l, roles.toMap))
 
-      def withNodes(roles: List[(Role, Node[W, L, E])]): Node[W, L, E] =
-        Right(GraphNode(word, label, roles.toMap))
+      def withNodesList(roles: List[(Role, Fix[N])]): Fix[N] =
+        Fix(Node(w, l, roles.toMap))
+
+      def leaf: Fix[N] =
+        Fix(Node(w, l, Map.empty))
     }
 
-    implicit def wordToNodeWOLabel(w: W): Node[W, L, E] =
-      Right(GraphNode(w, None, Map.empty))
+    implicit def wordToNodeWOLabel(w: W): Fix[N] =
+      Fix(Node(w, None, Map.empty))
 
-    def amr(root: Node[W, L, E]) = AMR[W, L, E](root)
+    implicit class NodeSyntax(n: Fix[N]) {
+      def addRole(role: (Role, Fix[N])): Fix[N] = 
+        n.unfix match { case Node(w, l, roles) => 
+          Fix(Node(w, l, roles + role))
+        }
+    }
 
-    implicit class NodeSyntax(node: Node[W, L, E]) {
-      def addRole(role: (Role, Node[W, L, E])): Node[W, L, E] = {
-        node.map { n => GraphNode(n.word, n.label, n.roles + role) }
+    // def amr(root: Fix[N]): AMR[N] =
+      // AMR(root)
+
+    def pp(amr: AMR[N]): String = {
+      def ppNodes(indent: Int, roles: List[(Role, Fix[N])]): List[String] = {
+        val sortedRoles = roles.sortBy(_._1.pp)
+        sortedRoles.map { case (r, n) => ("  " * indent) ++ r.pp ++ " " ++ ppNode(indent, n) }
       }
+
+      def ppNode(indent: Int, node: Fix[N]): String = {
+        node.unfix match { 
+          case Node(w, None, roles) => (s"($w)" :: ppNodes(indent + 1, roles.toList)) .mkString("\n")
+          case Node(w, Some(l), roles) => (s"($w / $l)" :: ppNodes(indent + 1, roles.toList)) .mkString("\n")
+        }
+      }
+
+      ppNode(0, amr.root)
     }
   }
 }
 
 object Demo {
-  val syntax = new AMR.Syntax[String, String, Nothing]
+  val syntax = new AMR.SimpleSyntax[String, String]
   import syntax._
   
   import Role.Core._
   
-  val s1 = amr(
-    ("wants" / "want-01").nodes(
-      Arg0 -> ("boy" / "boy").nodes(), 
-      Arg1 -> ("believe" / "believe-01").nodes(Arg0 -> "boy")
+  val s1 = AMR(
+    ("wants" / "want-01").withNodes(
+      Arg0 -> ("boy" / "boy").withNodes(), 
+      Arg1 -> ("believe" / "believe-01").withNodes(Arg0 -> "boy")
     )
   )
 }
+

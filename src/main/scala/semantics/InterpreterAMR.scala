@@ -1,10 +1,14 @@
 package semantics
 
 import link.parser.ParseResult
-import amr.AMR
+import amr.{AMR, Fix}
 
 trait InterpreterAMR[W, L] {
-  def interpret(parseResult: ParseResult[W]): Either[InterpretationError, AMR[W, L, Nothing]]
+  type N[X] = AMR.Node[W, L, X]
+  type T = AMR[N]
+  type F = Fix[N]
+  
+  def interpret(parseResult: ParseResult[W]): Either[InterpretationError, T]
 }
 
 

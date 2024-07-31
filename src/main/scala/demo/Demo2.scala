@@ -44,10 +44,12 @@ class Demo2 {
     } yield semantics
   }
 
-  def ppAMR[L](r: Either[LinkError, List[AMR[String, L, Nothing]]]): Unit = {
+  def ppAMR[L](r: Either[LinkError, List[EnglishInterpreter#T]]): Unit = {
     r match {
       case Left(err) => println(s"error: $err")
-      case Right(l) => l.zipWithIndex.foreach { case (amr, index) => println(s"solution: $index:\n${amr.pp}")}
+      case Right(l) => l.zipWithIndex.foreach { case (amr, index) =>
+        println(s"solution: $index:\n${interpreter.pp(amr)}")
+      }
     }
   }
 

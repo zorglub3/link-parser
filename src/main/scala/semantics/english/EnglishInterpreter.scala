@@ -6,9 +6,7 @@ import amr.{AMR, Role}
 import semantics._
 
 class EnglishInterpreter extends InterpreterAMR[String, Label] {
-  type Node = AMR.Node[String, Label, Nothing]
-
-  val nodeSyntax = new AMR.Syntax[String, Label, Nothing]
+  val nodeSyntax = new AMR.SimpleSyntax[String, Label]
 
   // guards for for-comprehensions
   def guard(v: => Boolean): Option[Unit] = {
@@ -55,7 +53,7 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
   }
 
   // the workhorse
-  def interpretSimple(pr: ParseResult[String]): Option[Node] = {
+  def interpretSimple(pr: ParseResult[String]): Option[F] = {
     import nodeSyntax._
     
     def prepositionRole(pp: String): Role = {
@@ -71,7 +69,7 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
       }
     }
 
-    def interpretPrep(w: Int): Option[(Role, Node)] = {
+    def interpretPrep(w: Int): Option[(Role, F)] = {
       for {
         _ <- guard(pr.tokenHasTag(w, EnglishWordTags.Preposition)) 
         idx <- pr.graphEdgeFrom(EnglishLinkTags.R)(w)
@@ -81,28 +79,28 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
       } yield role -> np
     }
 
-    def interpretDirection(w: Int): Option[(Role, Node)] = {
+    def interpretDirection(w: Int): Option[(Role, F)] = {
       for {
         _ <- guard(pr.tokenHasTag(w, EnglishWordTags.Direction))
         word <- pr.getWord(w).map(_.toLowerCase())
       } yield (Role.Common.Direction -> word)
     }
 
-    def interpretPronoun(w: Int): Option[Node] = {
+    def interpretPronoun(w: Int): Option[F] = {
       for {
         _ <- guard(pr.tokenHasTag(w, EnglishWordTags.Pronoun))
         word <- pr.getWord(w).map(_.toLowerCase())
         person <- pr.pronounPerson(w)
         plural = pr.isPlural(w)
         gender = pr.pronounGender(w)
-      } yield (word / Label.Pronoun).nodes()
+      } yield (word / Label.Pronoun).leaf
     }
 
-    def interpretProperNP(w: Int): Option[Node] = 
+    def interpretProperNP(w: Int): Option[F] = 
       None // TODO stub
 
-    def interpretDeterminer(w: Int): Option[List[(Role, Node)]] = {
-      def getNodes(word: String): List[(Role, Node)] = {
+    def interpretDeterminer(w: Int): Option[List[(Role, F)]] = {
+      def getNodes(word: String): List[(Role, F)] = {
         word match {
           case "a" => List(Role.Common.Definite -> "-")
           case "an" => List(Role.Common.Definite -> "-")
@@ -122,7 +120,7 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
       } yield getNodes(word)    
     }
 
-    def interpretStdNP(w: Int): Option[Node] = {
+    def interpretStdNP(w: Int): Option[F] = {
       // TODO predicates
       for {
         _ <- guard(pr.tokenHasTag(w, EnglishWordTags.Noun))
@@ -131,27 +129,21 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
         nodes <- interpretDeterminer(det)
         plural = pr.isPlural(w)
       } yield {
-        (word / Label.Noun).withNodes(
-          nodes :+ 
-          (if(plural) { 
-            Role.Common.Plural -> "+" 
-          } else { 
-            Role.Common.Plural -> "-" 
-          })
-        )
+        val pluralSign: F = if(plural) "+" else "-"
+        (word / Label.Noun).withNodesList((Role.Common.Plural -> pluralSign) :: nodes)
       }   
     }
 
-    def interpretNP(w: Int): Option[Node] = {
+    def interpretNP(w: Int): Option[F] = {
       interpretPronoun(w) orElse interpretProperNP(w) orElse interpretStdNP(w)
     }
 
-    def question(n: Int, h: Int): Node => Node = {
+    def question(n: Int, h: Int): F => F = {
       (for {
         _ <- guard(h < n)
         q = pr.graphEdgeFrom(EnglishLinkTags.Q)(h).flatMap(pr.getWord(_).map(_.toLowerCase()))
-      } yield { node: Node =>
-        val qnode = ("a" / Label.Unknown).nodes()
+      } yield { node: F =>
+        val qnode = ("a" / Label.Unknown).leaf
         
         q match {
           case None => node.addRole(Role.Common.Polarity -> qnode)
@@ -164,31 +156,31 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
       }) .getOrElse(identity _)
     }
 
-    def interpretHelpVerb(n: Int, w: Int, arg1: Node): Option[Node] = {
+    def interpretHelpVerb(n: Int, w: Int, arg1: F): Option[F] = {
       for {
         h <- pr.graphEdgeFrom(EnglishLinkTags.H)(w)
         q = question(n, h)
         root <- pr.getVerbRoot(h)
         word <- pr.getWord(h).map(_.toLowerCase())
-      } yield q((word / Label.VP(root)).nodes(Role.Core.Arg1 -> arg1))
+      } yield q((word / Label.VP(root)).withNodes(Role.Core.Arg1 -> arg1))
     }
 
-    def interpretSimpleVerb(w: Int): Option[Node] = {
+    def interpretSimpleVerb(w: Int): Option[F] = {
       for {
         _ <- guard(pr.tokenHasTag(w, EnglishWordTags.Transitive) || pr.tokenHasTag(w, EnglishWordTags.Intransitive))
         root <- pr.getVerbRoot(w)
         word <- pr.getWord(w).map(_.toLowerCase())
         np =  pr.graphEdgeFrom(EnglishLinkTags.O)(w)
         obj = np.flatMap(interpretNP(_)).map(Role.Core.Arg1 -> _).toList
-      } yield (word / Label.VP(root)).withNodes(obj)
+      } yield (word / Label.VP(root)).withNodesList(obj)
     }
 
-    def interpretVP(n: Int, w: Int): Option[Node] = {
+    def interpretVP(n: Int, w: Int): Option[F] = {
       interpretSimpleVerb(w)
         .map(mainVP => interpretHelpVerb(n, w, mainVP).getOrElse(mainVP))
     }
 
-    def interpretStatement(): Option[Node] = {
+    def interpretStatement(): Option[F] = {
       for {
         (n, v) <- pr.graphEdge(EnglishLinkTags.S)
         np <- interpretNP(n)
@@ -200,7 +192,7 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
       }
     }
 
-    def interpretImperative(): Option[Node] = {
+    def interpretImperative(): Option[F] = {
       for {
         (w, v) <- pr.graphEdge(EnglishLinkTags.W)
         _ <- guard(pr.tokenHasTag(w, EnglishWordTags.Wall))
@@ -213,16 +205,19 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
     interpretStatement() orElse interpretImperative()
   }
 
-  def interpret(result: ParseResult[String]): Either[InterpretationError, AMR[String, Label, Nothing]] = {
+  def interpret(result: ParseResult[String]): Either[InterpretationError, T] = {
     interpretSimple(result)
       .toRight(InterpretationError("Could not make Abstract Meaning Representation for sentence"))
       .map(AMR.apply)
   }
 
-  def interpretList(results: List[ParseResult[String]]): Either[InterpretationError, List[AMR[String, Label, Nothing]]] = {
+  def interpretList(results: List[ParseResult[String]]): Either[InterpretationError, List[T]] = {
     results.flatMap(interpretSimple(_)) match {
       case Nil => Left(InterpretationError("Could not make AMR for sentence"))
       case h :: t => Right((h :: t).map(AMR.apply))
     }
   }
+
+  def pp(amr: T): String = nodeSyntax.pp(amr)
 }
+
