@@ -17,5 +17,7 @@ trait StandardNouns { self: EnglishLexiconBuilder =>
     Noun("telescope", "telescopes"),
     Noun("drink", "drinks"),
     Noun("dog", "dogs"),
+    Noun("glass", "glasses"),
+    Noun("bottle", "bottles"),
   ))
 }

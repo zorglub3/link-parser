@@ -103,7 +103,7 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
   }
 
   for(s <- sentences) {
-    it should s"check ${s._2} parses for '${s._1}'" in {
+    it should s"count ${s._2} parses for '${s._1}'" in {
       val t = tokenizer
       val p = parser
 
@@ -130,6 +130,29 @@ class EnglishParserSpec extends AnyFlatSpec with Matchers {
           tokens <- t(s._1)
           links <- p(tokens)
         } yield links).isLeft shouldBe true
+      }
+    }
+  }
+
+  "An english StateT based parser" should "dummy" in {
+    true shouldBe true
+  }
+
+  for(s <- sentences) {
+    it should s"parse '${s._1}' parses to ${s._2} graphs" in {
+      val t = tokenizer
+      val p = parser
+
+      if(s._2 > 0) {
+        (for {
+          tokens <-t(s._1)
+          links = p.parse(tokens)
+        } yield links.length) shouldBe Right(s._2)
+      } else {
+        (for {
+          tokens <- t(s._1)
+          links = p.parse(tokens)
+        } yield links) shouldBe Right(List.empty)
       }
     }
   }

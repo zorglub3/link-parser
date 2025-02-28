@@ -3,10 +3,13 @@ package link.tokenizer
 import collection.mutable.{HashSet, Builder, MultiDict}
 import link.rule.WordTag
 
+// TODO simplify - with using the cats based tokenizer
 trait TokenLexicon[W] {
   def lookup(str: String): Option[Vector[W]]
+  def lookupOne(str: String): Option[W]
   def tags(token: W): Seq[WordTag]
   def concat(tokens: List[String]): List[String]
+  def concatToken(token: String): List[List[String]]
   def leftWall: W
   def rightWall: W
 }
@@ -55,6 +58,15 @@ class StringTokenLexiconBuilder {
       val tt = if(ic) { t.toLowerCase() } else { t }
 
       if(tokenSet.contains(tt)) { Some(Vector(t)) } else { None }
+    }
+
+    def lookupOne(t: String): Option[String] = {
+      val tt = if(ic) { t.toLowerCase() } else { t }
+      if(tokenSet.contains(tt)) { Some(t) } else { None }
+    }
+
+    def concatToken(t: String): List[List[String]] = {
+      concatTokensMap.get(t).toList
     }
 
     def tags(token: String): List[WordTag] = { 

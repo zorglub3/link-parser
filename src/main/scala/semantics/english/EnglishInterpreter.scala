@@ -144,16 +144,17 @@ class EnglishInterpreter extends InterpreterAMR[String, Label] {
         q = pr.graphEdgeFrom(EnglishLinkTags.Q)(h).flatMap(pr.getWord(_).map(_.toLowerCase()))
       } yield { node: F =>
         val qnode = ("a" / Label.Unknown).leaf
+        val qmode = (Role.Common.Mode -> "question")
         
         q match {
-          case None => node.addRole(Role.Common.Polarity -> qnode)
-          case Some("where") => node.addRole(Role.Common.Location -> qnode)
-          case Some("why") => node.addRole(Role.Common.Purpose -> qnode)
-          case Some("when") => node.addRole(Role.Common.Purpose -> qnode)
-          case Some("how") => node.addRole(Role.Common.Manner -> qnode)
-          case _ => node
+          case None => node.addRole(Role.Common.Polarity -> qnode).addRole(Role.Common.Mode -> "question")
+          case Some("where") => node.addRole(Role.Common.Location -> qnode).addRole(Role.Common.Mode -> "question")
+          case Some("why") => node.addRole(Role.Common.Purpose -> qnode).addRole(Role.Common.Mode -> "question")
+          case Some("when") => node.addRole(Role.Common.Purpose -> qnode).addRole(Role.Common.Mode -> "question")
+          case Some("how") => node.addRole(Role.Common.Manner -> qnode).addRole(Role.Common.Mode -> "question")
+          case _ => node.addRole(Role.Common.Mode -> "question")
         }
-      }) .getOrElse(identity _)
+      }) .getOrElse(identity)
     }
 
     def interpretHelpVerb(n: Int, w: Int, arg1: F): Option[F] = {

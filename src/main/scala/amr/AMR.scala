@@ -2,7 +2,11 @@ package amr
 
 final case class Fix[F[_]](unfix: F[Fix[F]])
 
-case class AMR[R[_]](root: Fix[R])
+case class AMR[R[_]](root: Fix[R]) {
+  def mapNodes[A[_]](f: Fix[R] => Fix[A]): AMR[A] = AMR(f(root))  
+  def mapNodesE[E, A[_]](f: Fix[R] => Either[E, Fix[A]]): Either[E, AMR[A]] = f(root).map(AMR.apply)
+  def mapNodesOpt[E, A[_]](f: Fix[R] => Option[Fix[A]]): Option[AMR[A]] = f(root).map(AMR.apply)
+}
 
 object AMR {
   case class Node[W, L, N](
@@ -42,9 +46,6 @@ object AMR {
         }
     }
 
-    // def amr(root: Fix[N]): AMR[N] =
-      // AMR(root)
-
     def pp(amr: AMR[N]): String = {
       def ppNodes(indent: Int, roles: List[(Role, Fix[N])]): List[String] = {
         val sortedRoles = roles.sortBy(_._1.pp)
@@ -76,4 +77,3 @@ object Demo {
     )
   )
 }
-
